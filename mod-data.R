@@ -2,26 +2,41 @@ library(formattable)
 library(shiny)
 library(tidyverse)
 library(DT)
+library(bslib)
+
 
 
 dataUploadUI <- function(id) {
   ns <- NS(id)
   tagList(
+    
+    card(
+      HTML("<center>"),
+      h4("Step 1: Data Upload"),
+      HTML("<br>"),
+      p("General information here... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
+      HTML("</center>"),
+      style = "color:black; background:#c8cacc"
+    ),
+    
+
     tabsetPanel(
       
       ### Page to upload the data. ###
       # This page will include a file input button.
       # When the file is uploaded, a data table viewer of the original data.
       tabPanel("Step 1) Data Upload",
-               HTML("<br>"),
-               p("Some information will be placed here about how to upload the data set. Possible more instructions... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
-               HTML("<br>"),
-               sidebarPanel(
-                 fileInput(ns("file"), "File input:")
-               ),
-               mainPanel(
-                 tableOutput(ns("table"))
-               )
+        
+         HTML("<br>"),
+         p("Some information will be placed here about how to upload the data set. Possible more instructions... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
+         HTML("<br>"),
+         sidebarPanel(
+           fileInput(ns("file"), "File input:")
+         ),
+         mainPanel(
+           tableOutput(ns("table"))
+         )
+         
       ),
       
       ### Page to start cleaning the data ###
@@ -31,15 +46,40 @@ dataUploadUI <- function(id) {
                HTML("<br>"),
                p("Some information here on data cleaning... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
                HTML("<br>"),
-               sidebarPanel(
-                 p("TEST"),
-                 uiOutput(outputId = ns("variable_names_button"))
+               
+               
+               fluidRow(
+                 
+                 # Side bar with buttons.
+                 column(4, 
+                        h3("Column 1"),
+                        p("This is column 1."),
+                        bslib::card(
+                          card_header("Card header"),
+                          "Card body"
+                        )
+                 ),
+                 
+                 
+                 column(8, 
+                        h3("Column 2"),
+                        p("This is column 2")
+                 ),
+                 
+                 
+                 
+                 
+                 
                  
                ),
-               mainPanel(
-                 h1("TEST"),
-                 DTOutput(outputId = ns("column_output"))
-               )
+               
+               # sidebarPanel(
+               #   uiOutput(outputId = ns("variable_names_button")),
+               #   uiOutput(outputId = ns("column_data_type"))
+               # ),
+               # mainPanel(
+               #   DTOutput(outputId = ns("column_output"))
+               # )
       )
     )
   )
@@ -79,11 +119,32 @@ dataUploadServer <- function(id) {
       
       # Button to choose the different variables.
       options = colnames(original_data())
-      input_btn = selectInput(ns("column_select"), label = "Select box", 
-                  choices = options)
+      input_btn = selectInput(
+        ns("column_select"), 
+        label = "Question Selection", 
+        choices = options
+      )
      
       return(input_btn)
     })
+    
+    
+    # Button for column data type.
+    output$column_data_type <- renderUI({
+      
+      req(modified_data())
+      req(input$column_select)
+      
+      radioButtons(
+        ns("column_data_type"),
+        label = "Data Type",
+        choices = list("Numeric" = 1, "Sentence" = 2),
+        selected = 1
+      )
+      
+    })
+    
+    
     
     # Display data for the selected variable.
     output$column_output <- renderDT({

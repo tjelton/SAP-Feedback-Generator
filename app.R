@@ -4,6 +4,8 @@ source("mod-data.R")
 
 library(readxl)
 library(tidyverse)
+library(DT)
+library(bslib)
 
 data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet = "Form Responses 1")
 
@@ -11,10 +13,17 @@ data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet 
 
 ui  <- tagList(
   navbarPage(
-    theme = shinythemes::shinytheme("flatly"),
+    
+    theme = bs_theme(version = 5, bootswatch = "zephyr"),
+    
+    # Dashboard title.
     "SAP Report Generator",
-    tabPanel("Navbar 1",
-             sidebarPanel(
+    
+    tabPanel(
+      # Tab Title
+      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">Page 1</h5>'),
+
+      sidebarPanel(
                fileInput("file", "File input:"),
                textInput("txt", "Text input:", "general"),
                sliderInput("slider", "Slider input:", 1, 100, 30),
@@ -44,13 +53,21 @@ ui  <- tagList(
     ),
     
     
-    tabPanel("Data", 
+    tabPanel(
+      # Tab Title
+      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">1) Data Upload</h5>'),
              
        dataUploadUI("data_upload")
        
              
     ),
-    tabPanel("Navbar 3", "This panel is intentionally left blank")
+    tabPanel(
+      
+      # Tab Title
+      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">Page 3</h5>'),
+             
+             
+    "This panel is intentionally left blank")
   )
 )
 
@@ -63,6 +80,8 @@ ui  <- tagList(
 
 server <- function(input, output, session) {
   
+  # Uncomment to see the bs_themer()
+  #bs_themer() #Flatly, #Spacelab, #Zephyr
   
   dataUploadServer(id = "data_upload")
 
