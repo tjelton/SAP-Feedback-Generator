@@ -1,0 +1,12 @@
+
+/* Set the colour of the active pill. */
+.nav-pills {
+	--bs-nav-pills-link-active-color: #000 !important;
+	--bs-nav-pills-link-active-bg: #ebebed !important;
+}
+
+/* Tab hover colour */
+.nav-pills > li > a:hover {
+  background-color: #f7f7fa !important;
+  color: #000000 !important;
+}
