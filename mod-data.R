@@ -33,12 +33,43 @@ dataUploadUI <- function(id) {
         # This page will include a file input button.
         # When the file is uploaded, a data table viewer of the original data.
         tabPanel("Step 1) Data Upload",
+                
+                 HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
                  
-                 HTML("<br>"),
-                 p("Some information will be placed here about how to upload the data set. Possible more instructions... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
+                 # Info for how to upload the file and upload button.
+                 fluidRow(
+                   
+                   # Information
+                   column(8,
+                      card(
+                        height = 200,
+                        HTML("
+                          <p>File upload requirements:<br>
+                          <ul>
+                            <li>Only excel files (extension .xlsx) are currently supported.</li>
+                            <li>The excel file must have the survey data on a tab named \"Form Responses 1\".</li>
+                            <li>The first row of the spreadsheet must contain the column names, and each row underneath represents the responses from
+                            a single person.</li>
+                            <li>More file upload types coming soon...</li>
+                          </ul></p>"
+                        ),
+                      )
+                   ),
+                   
+                   # Upload
+                   column(4,
+                      br(),
+                      card(
+                        fileInput(ns("file"), "File input:"),
+                        style = "background:#cce4fc" # Light blue colour
+                      )
+                   )
+                   
+                 ),
+
                  HTML("<br>"),
                  sidebarPanel(
-                   fileInput(ns("file"), "File input:")
+                   p("TEST")
                  ),
                  mainPanel(
                    tableOutput(ns("table"))
