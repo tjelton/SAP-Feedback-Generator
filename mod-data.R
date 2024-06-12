@@ -75,7 +75,7 @@ dataUploadUI <- function(id) {
              
              condition = paste0("output['", ns('data_uploaded_flag'), "']"),
              h5("Uploaded Data:"),
-             tableOutput(ns("table"))
+             DT::dataTableOutput(ns("original_data_table"))
              
            ),
            
@@ -159,10 +159,20 @@ dataUploadServer <- function(id) {
     outputOptions(output, 'data_uploaded_flag', suspendWhenHidden=FALSE)
     
     # Render the processed data as a table
-    output$table <- renderTable({
-      req(original_data())  # Ensure processed data is available
-      original_data()
+    output$original_data_table <- renderDT({
+      #req(original_data())  # Ensure processed data is available
+      #original_data()
+      datatable(original_data(), options = list(columnDefs = list(list(
+        targets = 9, #TODO: Need to change the target to be all character columns.
+        render = JS(
+          "function(data, type, row, meta) {",
+          "return type === 'display' && data.length > 6 ?",
+          "'<span title=\"' + data + '\">' + data.substr(0, 6) + '...</span>' : data;",
+          "}")
+      ))), callback = JS('table.page(3).draw(false);'))
     })
+    
+    
     
     # Create button when the data is uploaded.
     # Widget gallery: https://shiny.posit.co/r/gallery/widgets/widget-gallery/
