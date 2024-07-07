@@ -23,6 +23,25 @@ dataUploadUI <- function(id) {
       tags$link(rel = "stylesheet", type = "text/css", href = "navpill_styles.css")
     ),
     
+    # CSS to format tool tips.
+    tags$head(
+      tags$style(HTML(
+        ".tooltip-span:hover {
+         position: relative;
+       }
+       .tooltip-span:hover::before {
+         content: attr(title);
+         position: absolute;
+         background: rgba(0, 0, 0, 0.75);
+         color: white;
+         padding: 5px;
+         border-radius: 3px;
+         z-index: 10;
+         opacity: 1;
+       }"
+      ))
+    ),
+    
     card(
       
       tabsetPanel(
@@ -141,6 +160,11 @@ dataUploadServer <- function(id) {
       req(input$data_file)  # Ensure a file is uploaded
       infile <- input$data_file
       data <- read_excel(infile$datapath, sheet = "Form Responses 1")
+      
+      # Change NA values in character columns to the empty string.
+      data <- data %>%
+        mutate(across(where(is.character), ~ ifelse(is.na(.), "", .)))
+      
       return(data)
     })
     
@@ -153,21 +177,27 @@ dataUploadServer <- function(id) {
     # Flag for when data has been uploaded.
     output$data_uploaded_flag <- reactive({
       val <- !(is.null(input$data_file))
-      print(val)
     })
     # To make the flag output reactive to be accessed from the ui.
     outputOptions(output, 'data_uploaded_flag', suspendWhenHidden=FALSE)
     
     # Render the processed data as a table
     output$original_data_table <- renderDT({
-      #req(original_data())  # Ensure processed data is available
-      #original_data()
+      
+      # Ensure processed data is available
+      req(original_data())
+      
+      
+      test <- original_data()
+
       datatable(original_data(), options = list(columnDefs = list(list(
-        targets = 9, #TODO: Need to change the target to be all character columns.
+        targets = 11, #TODO: Need to change the target to be all character columns.
+        
+        # Custom CSS for tooltips available in UI. Class is called "tooltip-span".
         render = JS(
           "function(data, type, row, meta) {",
-          "return type === 'display' && data.length > 6 ?",
-          "'<span title=\"' + data + '\">' + data.substr(0, 6) + '...</span>' : data;",
+          "return type === 'display' && data.length > 15 ?",
+          "'<span class=\"tooltip-span\" title=\"' + data + '\">' + data.substr(0, 6) + '...</span>' : data;",
           "}")
       ))), callback = JS('table.page(3).draw(false);'))
     })
