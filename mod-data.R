@@ -181,23 +181,27 @@ dataUploadServer <- function(id) {
     # To make the flag output reactive to be accessed from the ui.
     outputOptions(output, 'data_uploaded_flag', suspendWhenHidden=FALSE)
     
-    # Render the processed data as a table
+    # Render the original uploaded data as a table.
     output$original_data_table <- renderDT({
-      
-      # Ensure processed data is available
       req(original_data())
       
+      # Find all columns that are character type.
+      data = original_data()
+      character_type_column_indices = c()
+      for (i in seq_along(data)) {
+        if (is.character(data[[i]])) {
+          character_type_column_indices = c(character_type_column_indices, i)
+        }
+      }
       
-      test <- original_data()
-
-      datatable(original_data(), options = list(columnDefs = list(list(
-        targets = 11, #TODO: Need to change the target to be all character columns.
-        
+      datatable(data, options = list(columnDefs = list(list(
+        targets = character_type_column_indices,
         # Custom CSS for tooltips available in UI. Class is called "tooltip-span".
+        # Any string over 100 characters is cut off. Hovering over the cell reveals a tooltip that shows the full string.
         render = JS(
           "function(data, type, row, meta) {",
-          "return type === 'display' && data.length > 15 ?",
-          "'<span class=\"tooltip-span\" title=\"' + data + '\">' + data.substr(0, 6) + '...</span>' : data;",
+          "return type === 'display' && data.length > 100 ?",
+          "'<span class=\"tooltip-span\" title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
           "}")
       ))), callback = JS('table.page(3).draw(false);'))
     })
