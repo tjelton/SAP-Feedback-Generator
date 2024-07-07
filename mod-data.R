@@ -194,7 +194,7 @@ dataUploadServer <- function(id) {
         }
       }
       
-      datatable(data, options = list(columnDefs = list(list(
+      datatable(data, options = list(scrollX = TRUE, columnDefs = list(list(
         targets = character_type_column_indices,
         # Custom CSS for tooltips available in UI. Class is called "tooltip-span".
         # Any string over 100 characters is cut off. Hovering over the cell reveals a tooltip that shows the full string.
