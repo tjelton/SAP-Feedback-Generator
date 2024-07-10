@@ -3,6 +3,7 @@ library(shiny)
 library(tidyverse)
 library(DT)
 library(bslib)
+library(stringr)
 
 
 
@@ -21,25 +22,6 @@ dataUploadUI <- function(id) {
     
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "navpill_styles.css")
-    ),
-    
-    # CSS to format tool tips.
-    tags$head(
-      tags$style(HTML(
-        ".tooltip-span:hover {
-         position: relative;
-       }
-       .tooltip-span:hover::before {
-         content: attr(title);
-         position: absolute;
-         background: rgba(0, 0, 0, 0.75);
-         color: white;
-         padding: 5px;
-         border-radius: 3px;
-         z-index: 10;
-         opacity: 1;
-       }"
-      ))
     ),
     
     card(
@@ -94,6 +76,7 @@ dataUploadUI <- function(id) {
              
              condition = paste0("output['", ns('data_uploaded_flag'), "']"),
              h5("Uploaded Data:"),
+             textOutput("character_tooltip_message"),
              DT::dataTableOutput(ns("original_data_table"))
              
            ),
@@ -196,17 +179,13 @@ dataUploadServer <- function(id) {
       
       datatable(data, options = list(scrollX = TRUE, columnDefs = list(list(
         targets = character_type_column_indices,
-        # Custom CSS for tooltips available in UI. Class is called "tooltip-span".
-        # Any string over 100 characters is cut off. Hovering over the cell reveals a tooltip that shows the full string.
         render = JS(
           "function(data, type, row, meta) {",
           "return type === 'display' && data.length > 100 ?",
-          "'<span class=\"tooltip-span\" title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
+          "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
           "}")
       ))), callback = JS('table.page(3).draw(false);'))
     })
-    
-    
     
     # Create button when the data is uploaded.
     # Widget gallery: https://shiny.posit.co/r/gallery/widgets/widget-gallery/
