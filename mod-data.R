@@ -115,13 +115,13 @@ dataUploadUI <- function(id) {
              
            ),
            
-           # sidebarPanel(
-           #   uiOutput(outputId = ns("variable_names_button")),
-           #   uiOutput(outputId = ns("column_data_type"))
-           # ),
-           # mainPanel(
-           #   DTOutput(outputId = ns("column_output"))
-           # )
+           sidebarPanel(
+             uiOutput(outputId = ns("variable_names_button")),
+             uiOutput(outputId = ns("column_data_type"))
+           ),
+           mainPanel(
+             DTOutput(outputId = ns("column_output"))
+           )
         )
       ),
       
@@ -191,7 +191,7 @@ dataUploadServer <- function(id) {
     # Widget gallery: https://shiny.posit.co/r/gallery/widgets/widget-gallery/
     output$variable_names_button <- renderUI({
       
-      # Check that data has been set/processed.
+      # Check that data has been uploaded.
       req(original_data())
       
       # Button to choose the different variables.
@@ -204,6 +204,32 @@ dataUploadServer <- function(id) {
      
       return(input_btn)
     })
+    
+    # Cleaned data.
+    # Data frame where we will be saving the changes of the data cleaning.
+    # This is to retain a copy of the original uncleaned data.
+    cleaned_data <- reactiveVal()
+    observe({
+      req(original_data())
+      cleaned_data <- original_data()
+    })
+    
+    # Data cleaning options data frame:
+    # Essentially, this is a data frame where the first column is all of the different columns/questions in the original
+    # data set. The next few rows will correspond to the input buttons provided in the data cleaning phase. This data construct exists 
+    # for two main reasons; (1) to make it easier to quickly process data later on, (2) because we are reactively creating this input,
+    # and we want a way to save the data states.
+    data_cleaning_input_options <- reactiveVal()
+    observe({
+      # Check that data has been uploaded.
+      req(original_data())
+      
+      # Collect all questions into a single column
+      df = data.frame(questions = colnames(original_data()))
+      
+      data_cleaning_input_options(df)
+    })
+  
     
     
     # Button for column data type.
