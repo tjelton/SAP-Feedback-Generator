@@ -34,7 +34,6 @@ dataUploadUI <- function(id) {
         # This page will include a file input button.
         # When the file is uploaded, a data table viewer of the original data.
         tabPanel("Step 1) Data Upload",
-                
            HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
            
            # Info for how to upload the file and upload button.
@@ -64,7 +63,7 @@ dataUploadUI <- function(id) {
                 br(),
                 br(),
                 card(
-                  HTML("<p><b>File Input</b></p>"),
+                  HTML("<p><b><u>File Input</u></b></p>"),
                   fileInput(ns("data_file"), ""),
                   style = "background:#cce4fc" # Light blue colour
                 )
@@ -90,38 +89,34 @@ dataUploadUI <- function(id) {
         # Option to select a variable that appears in the data set.
         # Then can change the classification of the variable and do some data filtering/cleaning.
         tabPanel("Step 2) Data Cleaning",
+           HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
+                 
            HTML("<br>"),
            p("Some information here on data cleaning... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
            HTML("<br>"),
            
-           
            fluidRow(
              
-             # Side bar with buttons.
-             column(4, 
-                    h3("Column 1"),
-                    p("This is column 1."),
-                    bslib::card(
-                      card_header("Card header"),
-                      "Card body"
-                    )
+             # Side bar with data cleaning button choices
+             column(4,
+                card(
+                  HTML("<p><b><u>Cleaning Options</u></b></p>"),
+                  
+                  uiOutput(outputId = ns("variable_names_button")),
+                  uiOutput(outputId = ns("column_data_type")),
+                  
+                  
+                  style = "background:#cce4fc" # Light blue colour
+                )
              ),
              
-             
-             column(8, 
-                    h3("Column 2"),
-                    p("This is column 2")
-             ),
+             # Column Output
+             column(8,
+                DTOutput(outputId = ns("column_output"))
+             )
              
            ),
            
-           sidebarPanel(
-             uiOutput(outputId = ns("variable_names_button")),
-             uiOutput(outputId = ns("column_data_type"))
-           ),
-           mainPanel(
-             DTOutput(outputId = ns("column_output"))
-           )
         )
       ),
       
@@ -187,31 +182,13 @@ dataUploadServer <- function(id) {
       ))), callback = JS('table.page(3).draw(false);'))
     })
     
-    # Create button when the data is uploaded.
-    # Widget gallery: https://shiny.posit.co/r/gallery/widgets/widget-gallery/
-    output$variable_names_button <- renderUI({
-      
-      # Check that data has been uploaded.
-      req(original_data())
-      
-      # Button to choose the different variables.
-      options = colnames(original_data())
-      input_btn = selectInput(
-        ns("column_select"), 
-        label = "Question Selection", 
-        choices = options
-      )
-     
-      return(input_btn)
-    })
-    
     # Cleaned data.
     # Data frame where we will be saving the changes of the data cleaning.
     # This is to retain a copy of the original uncleaned data.
     cleaned_data <- reactiveVal()
     observe({
       req(original_data())
-      cleaned_data <- original_data()
+      cleaned_data(original_data())
     })
     
     # Data cleaning options data frame:
@@ -229,38 +206,61 @@ dataUploadServer <- function(id) {
       
       data_cleaning_input_options(df)
     })
+    
+    # Create select button when the data is uploaded.
+    # Select button allows user to choose the data column they wish to manipulate.
+    # Widget gallery: https://shiny.posit.co/r/gallery/widgets/widget-gallery/
+    output$variable_names_button <- renderUI({
+      
+      # Check that data has been uploaded.
+      req(cleaned_data())
+      
+      # Button to choose the different variables.
+      options = colnames(cleaned_data())
+      input_btn = selectInput(
+        ns("column_select"), 
+        label = "Question Selection", 
+        choices = options
+      )
+      
+      return(input_btn)
+    })
   
     
-    
-    # Button for column data type.
+    # Button to change the data type of the selected column.
     output$column_data_type <- renderUI({
       
-      req(modified_data())
+      req(cleaned_data())
+      
+      # Get parameters corresponding to the column that the user selected.
       req(input$column_select)
       
-      radioButtons(
+      button = radioButtons(
         ns("column_data_type"),
         label = "Data Type",
         choices = list("Numeric" = 1, "Sentence" = 2),
         selected = 1
       )
-      
+      return(button)
     })
     
-    
-    
-    # Display data for the selected variable.
+    # Display data for the selected variable in the cleaning phase.
     output$column_output <- renderDT({
       
-      req(modified_data())
+      req(cleaned_data())
       req(input$column_select)
       
       # Only extract the column that was selected by the user.
       data = modified_data() %>%
         select(input$column_select)
       
+      dt = datatable(data, 
+                     filter="none",
+                     options = list(lengthChange = FALSE),
+                     rownames = TRUE,
+                     editable = TRUE)
       
-      return(datatable(data, filter="top",options = list(lengthChange = FALSE)))
+      return(dt)
     })
     
   })
