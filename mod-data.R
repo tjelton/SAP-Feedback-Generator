@@ -4,8 +4,8 @@ library(tidyverse)
 library(DT)
 library(bslib)
 library(stringr)
-
-
+library(bsicons)
+library(shinyWidgets)
 
 dataUploadUI <- function(id) {
   ns <- NS(id)
@@ -100,10 +100,12 @@ dataUploadUI <- function(id) {
              # Side bar with data cleaning button choices
              column(4,
                 card(
-                  HTML("<p><b><u>Cleaning Options</u></b></p>"),
+                  HTML("<p><b><u><center>Cleaning Options</center></u></b></p>"),
                   
                   uiOutput(outputId = ns("variable_names_button")),
+                  uiOutput(outputId = ns("keep_data_column_toggle")),
                   uiOutput(outputId = ns("column_data_type")),
+                  uiOutput(outputId = ns("numeric_filter")),
                   
                   
                   style = "background:#cce4fc" # Light blue colour
@@ -219,31 +221,92 @@ dataUploadServer <- function(id) {
       options = colnames(cleaned_data())
       input_btn = selectInput(
         ns("column_select"), 
-        label = "Question Selection", 
+        
+        # Tooltip with more instructions.
+        label = tooltip(
+          trigger = list(
+            "Select Column",
+            bs_icon("info-circle")
+          ),
+          "From the drop-down, select the survey question (data column) you would like to data clean next.",
+        ),
+        
         choices = options
       )
       
       return(input_btn)
     })
-  
     
+    # Button to indicate whether to include this column or remove from later analysis.
+    # If the user selects yes to removing this column from the remainder of the anlaysis, all other options will dissapear.
+    output$keep_data_column_toggle <- renderUI({
+      
+      req(cleaned_data())
+      req(input$column_select)
+      
+      # Switch with tooltip.
+      switch = materialSwitch(
+        inputId = "id", 
+        label = tooltip(
+          trigger = list(
+            "Exclude from data analysis:",
+            bs_icon("info-circle")
+          ),
+          "Activate the switch if you wish to exclude the selected question/data column from further analysis. This is
+            useful if you want to minmise the columns you are analysing in later stages."
+        ),
+        status = "default")
+
+      return(switch)
+      
+    })
+
     # Button to change the data type of the selected column.
     output$column_data_type <- renderUI({
       
       req(cleaned_data())
-      
-      # Get parameters corresponding to the column that the user selected.
       req(input$column_select)
+      
+      # Check that there are less that 10 unique strings/elements.
+      # Arbitrary filter here as later graphics can become quite confusing with many different categories.
+      categories_theshold <- 10
+      unique_count <- length(unique(cleaned_data()[[input$column_select]]))
+      choices_ls = list("Numeric" = 1, "Sentence" = 2)
+      if (unique_count < categories_theshold) {
+        choices_ls = append(choices_ls, list("Categorical" = 3))
+      }
       
       button = radioButtons(
         ns("column_data_type"),
         label = "Data Type",
-        choices = list("Numeric" = 1, "Sentence" = 2),
+        choices = choices_ls,
         selected = 1
       )
       return(button)
     })
     
+    output$numeric_filter <- renderUI({
+      
+      req(cleaned_data())
+      req(input$column_select)
+      req(input$column_data_type)
+      
+      if (input$column_data_type == 3) {
+        # Temporarily convert the data to a numeric value to find the min and max value.
+        temp_data = cleaned_data() %>%
+          select(input$column_select) %>%
+          mutate(temp = as.numeric(input$column_select))
+        
+        
+      }
+      
+      return(NULL)
+      
+      
+    })
+    
+    
+
     # Display data for the selected variable in the cleaning phase.
     output$column_output <- renderDT({
       
@@ -251,7 +314,7 @@ dataUploadServer <- function(id) {
       req(input$column_select)
       
       # Only extract the column that was selected by the user.
-      data = modified_data() %>%
+      data = cleaned_data() %>%
         select(input$column_select)
       
       dt = datatable(data, 
