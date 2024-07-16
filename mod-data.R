@@ -243,7 +243,6 @@ dataUploadServer <- function(id) {
         )
       )
       
-      #return(input_btn)
     })
     
     # Button to indicate whether to include this column or remove from later analysis.
@@ -251,8 +250,7 @@ dataUploadServer <- function(id) {
     output$keep_data_column_toggle <- renderUI({
       
       req(cleaned_data())
-      req(input$column_select)
-      
+
       # Button prelude + tooltip.
       text <- span(
         "Exclude from data analysis:",
@@ -266,7 +264,7 @@ dataUploadServer <- function(id) {
       
       # Switch with tooltip.
       switch = materialSwitch(
-        inputId = "id", 
+        inputId = ns("exclude_toggle"), 
         label = NULL,
         status = "primary")
 
@@ -284,6 +282,11 @@ dataUploadServer <- function(id) {
       
       req(cleaned_data())
       req(input$column_select)
+
+      # When the exclude column button is activated, hide all other input options.
+      if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
+        return(NULL)
+      }
       
       # Check that there are less that 10 unique strings/elements.
       # Arbitrary filter here as later graphics can become quite confusing with many different categories.
