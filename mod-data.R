@@ -219,22 +219,31 @@ dataUploadServer <- function(id) {
       
       # Button to choose the different variables.
       options = colnames(cleaned_data())
+      
+      # Button prelude + tooltip.
+      text <- span(
+        "Select Column",
+        tooltip(
+          bs_icon("info-circle"),
+          "From the drop-down, select the survey question (data column) you would like to data clean next.",
+          placement = "right"
+        )
+      )
+      
       input_btn = selectInput(
         ns("column_select"), 
-        
-        # Tooltip with more instructions.
-        label = tooltip(
-          trigger = list(
-            "Select Column",
-            bs_icon("info-circle")
-          ),
-          "From the drop-down, select the survey question (data column) you would like to data clean next.",
-        ),
-        
+        label = NULL,
         choices = options
       )
       
-      return(input_btn)
+      return(
+        tagList(
+          text,
+          input_btn
+        )
+      )
+      
+      #return(input_btn)
     })
     
     # Button to indicate whether to include this column or remove from later analysis.
@@ -244,20 +253,29 @@ dataUploadServer <- function(id) {
       req(cleaned_data())
       req(input$column_select)
       
+      # Button prelude + tooltip.
+      text <- span(
+        "Exclude from data analysis:",
+        tooltip(
+          bs_icon("info-circle"),
+          "Activate the switch if you wish to exclude the selected question/data column from further analysis. This is
+            useful if you want to minmise the columns you are analysing in later stages.",
+          placement = "right"
+        )
+      )
+      
       # Switch with tooltip.
       switch = materialSwitch(
         inputId = "id", 
-        label = tooltip(
-          trigger = list(
-            "Exclude from data analysis:",
-            bs_icon("info-circle")
-          ),
-          "Activate the switch if you wish to exclude the selected question/data column from further analysis. This is
-            useful if you want to minmise the columns you are analysing in later stages."
-        ),
-        status = "default")
+        label = NULL,
+        status = "primary")
 
-      return(switch)
+      return(
+        tagList(
+          text,
+          switch
+        )
+      )
       
     })
 
