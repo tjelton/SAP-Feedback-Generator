@@ -106,6 +106,7 @@ dataUploadUI <- function(id) {
                   uiOutput(outputId = ns("keep_data_column_toggle")),
                   uiOutput(outputId = ns("column_data_type")),
                   uiOutput(outputId = ns("numeric_filter")),
+                  uiOutput(outputId = ns("set_as_categorical")),
                   
                   
                   style = "background:#cce4fc" # Light blue colour
@@ -262,11 +263,12 @@ dataUploadServer <- function(id) {
         )
       )
       
-      # Switch with tooltip.
+      # Switch.
       switch = materialSwitch(
         inputId = ns("exclude_toggle"), 
         label = NULL,
-        status = "primary")
+        status = "danger"
+      )
 
       return(
         tagList(
@@ -305,6 +307,58 @@ dataUploadServer <- function(id) {
       )
       return(button)
     })
+    
+    # Output to see if the user wishes to treat this column/variable as categorical.
+    # Recommend to the user not to store as categorical if the variable is a float or there are many categories.
+    output$set_as_categorical <- renderUI({
+      
+      req(cleaned_data())
+      req(input$column_select)
+      
+      data = cleaned_data()[[input$column_select]]
+      
+      # Check that there are less that 10 unique strings/elements.
+      # Arbitrary filter here as later graphics can become quite confusing with many different categories.
+      recommended_string = TRUE
+      categories_theshold <- 10
+      unique_count <- length(unique(data))
+      if (unique_count > categories_theshold) {
+        recommended_string = FALSE
+      }
+
+      # Set label for the button
+      label = "Treat as Categorical"
+      if (recommended_string == FALSE) {
+        label = paste0(label, "(not recommended for theis variable):")
+      }
+
+      # Button prelude + tooltip.
+      text <- span(
+        label,
+        tooltip(
+          bs_icon("info-circle"),
+          "Activate the switch if you wish to treat this variable as a categorical variable somewhere in your analysis.
+          Note that numeric data can be jointly considered as both numeric and categorical.
+          This option is not recommended where it would result in greater than 10 categories.",
+          placement = "right"
+        )
+      )
+      
+      # Switch.
+      switch = switchInput(
+        inputId = ns("categorical_toggle"), 
+        label = NULL
+      )
+      
+      return(
+        tagList(
+          text,
+          switch
+        )
+      )
+
+    })
+
     
     output$numeric_filter <- renderUI({
       
