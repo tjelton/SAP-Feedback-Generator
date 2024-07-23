@@ -290,22 +290,30 @@ dataUploadServer <- function(id) {
         return(NULL)
       }
       
-      # Check that there are less that 10 unique strings/elements.
-      # Arbitrary filter here as later graphics can become quite confusing with many different categories.
-      categories_theshold <- 10
-      unique_count <- length(unique(cleaned_data()[[input$column_select]]))
-      choices_ls = list("Numeric" = 1, "Sentence" = 2)
-      if (unique_count < categories_theshold) {
-        choices_ls = append(choices_ls, list("Categorical" = 3))
-      }
+      # Button prelude + tooltip.
+      text <- span(
+        "Data Type:",
+        tooltip(
+          bs_icon("info-circle"),
+          "Select whether your data is numeric or contains words (sentences). This will effect the types of analysis you can
+          perform on this variable.",
+          placement = "right"
+        )
+      )
       
       button = radioButtons(
         ns("column_data_type"),
-        label = "Data Type",
-        choices = choices_ls,
+        label = NULL,
+        choices = list("Numeric" = 1, "Sentence" = 2),
         selected = 1
       )
-      return(button)
+      
+      return(
+        tagList(
+          text,
+          button
+        )
+      )
     })
     
     # Output to see if the user wishes to treat this column/variable as categorical.
@@ -314,6 +322,11 @@ dataUploadServer <- function(id) {
       
       req(cleaned_data())
       req(input$column_select)
+      
+      # When the exclude column button is activated, hide all other input options.
+      if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
+        return(NULL)
+      }
       
       data = cleaned_data()[[input$column_select]]
       
@@ -329,7 +342,7 @@ dataUploadServer <- function(id) {
       # Set label for the button
       label = "Treat as Categorical"
       if (recommended_string == FALSE) {
-        label = paste0(label, "(not recommended for theis variable):")
+        label = paste0(label, " (not recommended for this variable):")
       }
 
       # Button prelude + tooltip.
