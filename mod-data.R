@@ -254,7 +254,7 @@ dataUploadServer <- function(id) {
 
       # Button prelude + tooltip.
       text <- span(
-        "Exclude from data analysis",
+        "Exclude From Data Analysis",
         tooltip(
           bs_icon("info-circle"),
           "Activate the switch if you wish to exclude the selected question/data column from further analysis. This is
@@ -290,13 +290,6 @@ dataUploadServer <- function(id) {
         return(NULL)
       }
       
-      col_name <- input$column_select
-      temporary <- cleaned_data() %>%
-        mutate(!!sym(col_name) := as.numeric(!!sym(col_name))) %>%
-        select(col_name)
-      print(summary(temporary))
-      
-      
       # Button prelude + tooltip.
       text <- span(
         "Data Type",
@@ -308,10 +301,26 @@ dataUploadServer <- function(id) {
         )
       )
       
+      # Temporarily convert data to numeric to see if numeric is a valid data type for this variable.
+      # We will claim that it is "potentially" valid if greater than 5% of the data is numeric.
+      col_name <- input$column_select
+      original_num_rows = nrow(cleaned_data())
+      temporary <- cleaned_data() %>%
+        mutate(!!sym(col_name) := as.numeric(!!sym(col_name))) %>%
+        select(col_name)
+      na_count <- sum(is.na(temporary))
+      original_num_rows = nrow(cleaned_data())
+      
+      choices_radio = list("Sentence" = 1, "Numeric" = 2)
+      # See if greater than 5% is numeric
+      if (na_count / original_num_rows >= 0.05) {
+        choices_radio = list("Sentence" = 1)
+      }
+      
       button = radioButtons(
         ns("column_data_type"),
         label = NULL,
-        choices = list("Numeric" = 1, "Sentence" = 2),
+        choices = choices_radio,
         selected = 1
       )
       
@@ -379,25 +388,55 @@ dataUploadServer <- function(id) {
 
     })
 
-    
+    # If the data has been classified as numeric, create slider to allow the values to be filtered.
     output$numeric_filter <- renderUI({
       
       req(cleaned_data())
       req(input$column_select)
       req(input$column_data_type)
       
-      if (input$column_data_type == 3) {
+      # The integer 2 represents the numeric data type.
+      if (input$column_data_type == 2) {
+        
         # Temporarily convert the data to a numeric value to find the min and max value.
+        col_name = input$column_select 
         temp_data = cleaned_data() %>%
-          select(input$column_select) %>%
-          mutate(temp = as.numeric(input$column_select))
+          select(col_name) %>%
+          mutate(!!sym(col_name) := as.numeric(!!sym(col_name)))
+        min_value = min(temp_data %>% select(col_name))
+        max_value = max(temp_data %>% select(col_name))
+
+        # Button prelude + tooltip.
+        text <- span(
+          "Filter Values",
+          tooltip(
+            bs_icon("info-circle"),
+            "Adjust the slider to filter out numeric values that do not lie withing the slider's range.",
+            placement = "right"
+          )
+        )
         
+        # Slider input button.
+        slider <- sliderInput(
+          "range",
+          NULL,
+          min = min_value, 
+          max = max_value,
+          value = c(min_value, max_value)
+        )
+
+        return(
+          tagList(
+            text,
+            slider
+          )
+        )
         
+      # Return nothing if variable is not classified as numeric.
+      } else {
+        return(NULL)
       }
-      
-      return(NULL)
-      
-      
+
     })
     
     
