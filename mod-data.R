@@ -109,6 +109,22 @@ dataUploadUI <- function(id) {
                   uiOutput(outputId = ns("numeric_filter")),
                   uiOutput(outputId = ns("edit_data_table_toggle")),
                   
+                  # Button to save and apply the data changes.
+                  actionButton(
+                    ns("save_data_changes"), 
+                    "Save + Apply",
+                    class = "btn-success"
+                  ) %>% 
+                    tooltip("Click to save the data cleaning changes."),
+                  
+                  # Button to reset the current data column back to the original data.
+                  actionButton(
+                    ns("reset_changes"),
+                    "Re-Set",
+                    class = "btn-danger"
+                  ) %>%
+                    tooltip("Click to reset the current selected data column to the original data"),    
+                  
                   style = "background:#cce4fc" # Light blue colour
                 )
              ),
@@ -212,7 +228,6 @@ dataUploadServer <- function(id) {
     
     # Create select button when the data is uploaded.
     # Select button allows user to choose the data column they wish to manipulate.
-    # Widget gallery: https://shiny.posit.co/r/gallery/widgets/widget-gallery/
     output$variable_names_button <- renderUI({
       
       # Check that data has been uploaded.
