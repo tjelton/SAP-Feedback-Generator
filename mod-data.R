@@ -220,8 +220,28 @@ dataUploadServer <- function(id) {
       # Check that data has been uploaded.
       req(original_data())
       
-      # Collect all questions into a single column
-      df = data.frame(questions = colnames(original_data()))
+      data_original <- original_data()
+      
+      # Collect all questions into a single column.
+      df = data.frame(questions = colnames(data_original))
+      
+      # Add columns corresponding to the different cleaning options.
+      df = df %>%
+        mutate(
+          cleaned = FALSE,
+          exclude_from_analysis = FALSE,
+          data_type = 1,
+          treat_as_categorical = FALSE,
+          filter_min_value = NA,
+          filter_max_value = NA
+        )
+
+      # If the data type is numeric in the original uploaded data, reflect this here.
+      for (question in df$questions) {
+        if (is.numeric(data_original[[question]])) {
+          df$data_type[df$questions == question] <- 2
+        }
+      }
       
       data_cleaning_input_options(df)
     })
