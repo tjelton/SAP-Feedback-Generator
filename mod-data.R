@@ -105,9 +105,9 @@ dataUploadUI <- function(id) {
                   uiOutput(outputId = ns("variable_names_button")),
                   uiOutput(outputId = ns("keep_data_column_toggle")),
                   uiOutput(outputId = ns("column_data_type")),
-                  uiOutput(outputId = ns("numeric_filter")),
                   uiOutput(outputId = ns("set_as_categorical")),
-                  
+                  uiOutput(outputId = ns("numeric_filter")),
+                  uiOutput(outputId = ns("edit_data_table_toggle")),
                   
                   style = "background:#cce4fc" # Light blue colour
                 )
@@ -395,6 +395,11 @@ dataUploadServer <- function(id) {
       req(input$column_select)
       req(input$column_data_type)
       
+      # When the exclude column button is activated, hide all other input options.
+      if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
+        return(NULL)
+      }
+      
       # The integer 2 represents the numeric data type.
       if (input$column_data_type == 2) {
         
@@ -418,7 +423,7 @@ dataUploadServer <- function(id) {
         
         # Slider input button.
         slider <- sliderInput(
-          "range",
+          ns("numeric_filter_slider"),
           NULL,
           min = min_value, 
           max = max_value,
@@ -436,7 +441,42 @@ dataUploadServer <- function(id) {
       } else {
         return(NULL)
       }
+    })
+    
+    # Toggle which when toggled on, allows the user to be able to edit the data table.
+    output$edit_data_table_toggle <- renderUI({
+      
+      req(cleaned_data())
+      req(input$column_select)
 
+      # When the exclude column button is activated, hide all other input options.
+      if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
+        return(NULL)
+      }
+      
+      # Button prelude + tooltip.
+      text <- span(
+        "Edit Data Table Values",
+        tooltip(
+          bs_icon("info-circle"),
+          "When activated, you can double click the value of a particular row to enable edit access to it.
+          This is helpful for simple data cleaning.",
+          placement = "right"
+        )
+      )
+      
+      # Switch.
+      switch = switchInput(
+        inputId = ns("edit_data_table_toggle"), 
+        label = NULL
+      )
+      
+      return(
+        tagList(
+          text,
+          switch
+        )
+      )
     })
     
     
@@ -447,15 +487,23 @@ dataUploadServer <- function(id) {
       req(cleaned_data())
       req(input$column_select)
       
+      flag = FALSE
+      # If the edit data table toggle is activated, we want the data table to be put in edit mode.
+      if (!is.null(input$edit_data_table_toggle) && input$edit_data_table_toggle == TRUE) {
+        flag = TRUE
+      } 
+
       # Only extract the column that was selected by the user.
       data = cleaned_data() %>%
         select(input$column_select)
       
-      dt = datatable(data, 
-                     filter="none",
-                     options = list(lengthChange = FALSE),
-                     rownames = TRUE,
-                     editable = TRUE)
+      dt = datatable(
+        data, 
+        filter="none",
+        options = list(lengthChange = FALSE),
+        rownames = FALSE,
+        editable = flag
+      )
       
       return(dt)
     })
