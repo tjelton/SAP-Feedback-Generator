@@ -64,7 +64,7 @@ dataUploadUI <- function(id) {
                 br(),
                 card(
                   HTML("<p><b><u>File Input</u></b></p>"),
-                  fileInput(ns("data_file"), ""),
+                  #fileInput(ns("data_file"), ""),
                   style = "background:#cce4fc" # Light blue colour
                 )
              )
@@ -137,11 +137,11 @@ dataUploadServer <- function(id) {
     
     # Reactive expression to read the uploaded file
     original_data <- reactive({
-      if(is.null(input$data_file)) return(NULL)
-      req(input$data_file)  # Ensure a file is uploaded
-      infile <- input$data_file
-      data <- read_excel(infile$datapath, sheet = "Form Responses 1")
-      
+      # if(is.null(input$data_file)) return(NULL)
+      # req(input$data_file)  # Ensure a file is uploaded
+      # infile <- input$data_file
+      #data <- read_excel(infile$datapath, sheet = "Form Responses 1")
+      data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet = "Form Responses 1")
       # Change NA values in character columns to the empty string.
       data <- data %>%
         mutate(across(where(is.character), ~ ifelse(is.na(.), "", .)))
@@ -254,7 +254,7 @@ dataUploadServer <- function(id) {
 
       # Button prelude + tooltip.
       text <- span(
-        "Exclude from data analysis:",
+        "Exclude from data analysis",
         tooltip(
           bs_icon("info-circle"),
           "Activate the switch if you wish to exclude the selected question/data column from further analysis. This is
@@ -290,9 +290,16 @@ dataUploadServer <- function(id) {
         return(NULL)
       }
       
+      col_name <- input$column_select
+      temporary <- cleaned_data() %>%
+        mutate(!!sym(col_name) := as.numeric(!!sym(col_name))) %>%
+        select(col_name)
+      print(summary(temporary))
+      
+      
       # Button prelude + tooltip.
       text <- span(
-        "Data Type:",
+        "Data Type",
         tooltip(
           bs_icon("info-circle"),
           "Select whether your data is numeric or contains words (sentences). This will effect the types of analysis you can
@@ -342,7 +349,7 @@ dataUploadServer <- function(id) {
       # Set label for the button
       label = "Treat as Categorical"
       if (recommended_string == FALSE) {
-        label = paste0(label, " (not recommended for this variable):")
+        label = paste0(label, " (not recommended for this variable)")
       }
 
       # Button prelude + tooltip.
