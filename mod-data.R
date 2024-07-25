@@ -34,16 +34,16 @@ dataUploadUI <- function(id) {
         # This page will include a file input button.
         # When the file is uploaded, a data table viewer of the original data.
         tabPanel("Step 1) Data Upload",
-           HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
-           
-           # Info for how to upload the file and upload button.
-           fluidRow(
-             
-             # Information
-             column(8,
-                card(
-                  height = 270,
-                  HTML("
+                 HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
+                 
+                 # Info for how to upload the file and upload button.
+                 fluidRow(
+                   
+                   # Information
+                   column(8,
+                          card(
+                            height = 270,
+                            HTML("
                     <p>File upload requirements:<br>
                     <ul>
                       <li>Only excel files (extension .xlsx) are currently supported.</li>
@@ -54,34 +54,34 @@ dataUploadUI <- function(id) {
                       <li>Once uploaded, the file contents will be displayed in the table below. This is the original data as you uploaded it (it will
                       not contains the updates that you make in the following stages).</li>
                     </ul></p>"
-                  ),
-                )
-             ),
-             
-             # Upload
-             column(4,
-                br(),
-                br(),
-                card(
-                  HTML("<p><b><u>File Input</u></b></p>"),
-                  #fileInput(ns("data_file"), ""),
-                  style = "background:#cce4fc" # Light blue colour
-                )
-             )
-             
-           ),
-           
-           conditionalPanel(
-             
-             condition = paste0("output['", ns('data_uploaded_flag'), "']"),
-             h5("Uploaded Data:"),
-             textOutput("character_tooltip_message"),
-             DT::dataTableOutput(ns("original_data_table"))
-             
-           ),
-           
-
-           
+                            ),
+                          )
+                   ),
+                   
+                   # Upload
+                   column(4,
+                          br(),
+                          br(),
+                          card(
+                            HTML("<p><b><u>File Input</u></b></p>"),
+                            #fileInput(ns("data_file"), ""),
+                            style = "background:#cce4fc" # Light blue colour
+                          )
+                   )
+                   
+                 ),
+                 
+                 conditionalPanel(
+                   
+                   condition = paste0("output['", ns('data_uploaded_flag'), "']"),
+                   h5("Uploaded Data:"),
+                   textOutput("character_tooltip_message"),
+                   DT::dataTableOutput(ns("original_data_table"))
+                   
+                 ),
+                 
+                 
+                 
                  
         ),
         
@@ -89,60 +89,60 @@ dataUploadUI <- function(id) {
         # Option to select a variable that appears in the data set.
         # Then can change the classification of the variable and do some data filtering/cleaning.
         tabPanel("Step 2) Data Cleaning",
-           HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
+                 HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
                  
-           HTML("<br>"),
-           p("Some information here on data cleaning... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
-           HTML("<br>"),
-           
-           fluidRow(
-             
-             # Side bar with data cleaning button choices
-             column(4,
-                card(
-                  HTML("<p><b><u><center>Cleaning Options</center></u></b></p>"),
-                  
-                  uiOutput(outputId = ns("variable_names_button")),
-                  uiOutput(outputId = ns("keep_data_column_toggle")),
-                  uiOutput(outputId = ns("column_data_type")),
-                  uiOutput(outputId = ns("set_as_categorical")),
-                  uiOutput(outputId = ns("numeric_filter")),
-                  uiOutput(outputId = ns("edit_data_table_toggle")),
-                  
-                  # Button to save and apply the data changes.
-                  actionButton(
-                    ns("save_data_changes"), 
-                    "Save + Apply",
-                    class = "btn-success"
-                  ) %>% 
-                    tooltip("Click to save the data cleaning changes."),
-                  
-                  # Button to reset the current data column back to the original data.
-                  actionButton(
-                    ns("reset_changes"),
-                    "Re-Set",
-                    class = "btn-danger"
-                  ) %>%
-                    tooltip("Click to reset the current selected data column to the original data"),    
-                  
-                  style = "background:#cce4fc" # Light blue colour
-                )
-             ),
-             
-             # Column Output
-             column(8,
-                DTOutput(outputId = ns("column_output"))
-             )
-             
-           ),
-           
+                 HTML("<br>"),
+                 p("Some information here on data cleaning... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
+                 HTML("<br>"),
+                 
+                 fluidRow(
+                   
+                   # Side bar with data cleaning button choices
+                   column(4,
+                          card(
+                            HTML("<p><b><u><center>Cleaning Options</center></u></b></p>"),
+                            
+                            uiOutput(outputId = ns("variable_names_button")),
+                            uiOutput(outputId = ns("keep_data_column_toggle")),
+                            uiOutput(outputId = ns("column_data_type")),
+                            uiOutput(outputId = ns("set_as_categorical")),
+                            uiOutput(outputId = ns("numeric_filter")),
+                            uiOutput(outputId = ns("edit_data_table_toggle")),
+                            
+                            # Button to save and apply the data changes.
+                            actionButton(
+                              ns("save_data_changes"), 
+                              "Save + Apply",
+                              class = "btn-success"
+                            ) %>% 
+                              tooltip("Click to save the data cleaning changes."),
+                            
+                            # Button to reset the current data column back to the original data.
+                            actionButton(
+                              ns("reset_changes"),
+                              "Re-Set",
+                              class = "btn-danger"
+                            ) %>%
+                              tooltip("Click to reset the current selected data column to the original data"),    
+                            
+                            style = "background:#cce4fc" # Light blue colour
+                          )
+                   ),
+                   
+                   # Column Output
+                   column(8,
+                          DTOutput(outputId = ns("column_output"))
+                   )
+                   
+                 ),
+                 
         )
       ),
       
       style = "color:black; background:#FFFFFF"
     ),
-
-
+    
+    
   )
 }
 
@@ -233,13 +233,14 @@ dataUploadServer <- function(id) {
           data_type = 1,
           treat_as_categorical = FALSE,
           filter_min_value = NA,
-          filter_max_value = NA
+          filter_max_value = NA,
+          edit_data_table = FALSE,
         )
-
+      
       # If the data type is numeric in the original uploaded data, reflect this here.
       for (question in df$questions) {
         if (is.numeric(data_original[[question]])) {
-          df$data_type[df$questions == question] <- 2
+          df$data_type[df$questions == question] <- 2 # 2 represents numeric
         }
       }
       
@@ -286,7 +287,10 @@ dataUploadServer <- function(id) {
     output$keep_data_column_toggle <- renderUI({
       
       req(cleaned_data())
-
+      req(input$column_select)
+      
+      current_value <- data_cleaning_input_options()$exclude_from_analysis[data_cleaning_input_options()$questions == input$column_select]
+      
       # Button prelude + tooltip.
       text <- span(
         "Exclude From Data Analysis",
@@ -302,9 +306,10 @@ dataUploadServer <- function(id) {
       switch = materialSwitch(
         inputId = ns("exclude_toggle"), 
         label = NULL,
-        status = "danger"
+        status = "danger",
+        value = current_value
       )
-
+      
       return(
         tagList(
           text,
@@ -313,18 +318,20 @@ dataUploadServer <- function(id) {
       )
       
     })
-
+    
     # Button to change the data type of the selected column.
     output$column_data_type <- renderUI({
       
       req(cleaned_data())
       req(input$column_select)
-
+      
       # When the exclude column button is activated, hide all other input options.
       if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
         return(NULL)
       }
       
+      current_value <- data_cleaning_input_options()$data_type[data_cleaning_input_options()$questions == input$column_select]
+
       # Button prelude + tooltip.
       text <- span(
         "Data Type",
@@ -350,13 +357,14 @@ dataUploadServer <- function(id) {
       # See if greater than 5% is numeric
       if (na_count / original_num_rows >= 0.05) {
         choices_radio = list("Sentence" = 1)
+        current_value = 1
       }
       
       button = radioButtons(
         ns("column_data_type"),
         label = NULL,
         choices = choices_radio,
-        selected = 1
+        selected = current_value
       )
       
       return(
@@ -379,6 +387,8 @@ dataUploadServer <- function(id) {
         return(NULL)
       }
       
+      current_value <- data_cleaning_input_options()$treat_as_categorical[data_cleaning_input_options()$questions == input$column_select]
+
       data = cleaned_data()[[input$column_select]]
       
       # Check that there are less that 10 unique strings/elements.
@@ -389,13 +399,13 @@ dataUploadServer <- function(id) {
       if (unique_count > categories_theshold) {
         recommended_string = FALSE
       }
-
+      
       # Set label for the button
       label = "Treat as Categorical"
       if (recommended_string == FALSE) {
         label = paste0(label, " (not recommended for this variable)")
       }
-
+      
       # Button prelude + tooltip.
       text <- span(
         label,
@@ -411,18 +421,19 @@ dataUploadServer <- function(id) {
       # Switch.
       switch = switchInput(
         inputId = ns("categorical_toggle"), 
-        label = NULL
+        label = NULL,
+        value = current_value
       )
       
       return(
         tagList(
           text,
-          switch
+          switch,
         )
       )
-
+      
     })
-
+    
     # If the data has been classified as numeric, create slider to allow the values to be filtered.
     output$numeric_filter <- renderUI({
       
@@ -438,6 +449,10 @@ dataUploadServer <- function(id) {
       # The integer 2 represents the numeric data type.
       if (input$column_data_type == 2) {
         
+        # Get current min and max values
+        min_slider_value <- data_cleaning_input_options()$filter_min_value[data_cleaning_input_options()$questions == input$column_select]
+        max_slider_value <- data_cleaning_input_options()$filter_max_value[data_cleaning_input_options()$questions == input$column_select]
+        
         # Temporarily convert the data to a numeric value to find the min and max value.
         col_name = input$column_select 
         temp_data = cleaned_data() %>%
@@ -445,7 +460,16 @@ dataUploadServer <- function(id) {
           mutate(!!sym(col_name) := as.numeric(!!sym(col_name)))
         min_value = min(temp_data %>% select(col_name))
         max_value = max(temp_data %>% select(col_name))
-
+        
+        # Check if the min and max sliders values have been set previously (they are not NA).
+        # If they are NA, set to default values.
+        if (is.na(min_slider_value)) {
+          min_slider_value = min_value
+        }
+        if (is.na(max_slider_value)) {
+          max_slider_value = max_value
+        }
+        
         # Button prelude + tooltip.
         text <- span(
           "Filter Values",
@@ -462,9 +486,9 @@ dataUploadServer <- function(id) {
           NULL,
           min = min_value, 
           max = max_value,
-          value = c(min_value, max_value)
+          value = c(min_slider_value, max_slider_value)
         )
-
+        
         return(
           tagList(
             text,
@@ -472,22 +496,24 @@ dataUploadServer <- function(id) {
           )
         )
         
-      # Return nothing if variable is not classified as numeric.
+        # Return nothing if variable is not classified as numeric.
       } else {
         return(NULL)
       }
     })
     
-    # Toggle which when toggled on, allows the user to be able to edit the data table.
+    # Toggle which when switched on, allows the user to be able to edit the data table.
     output$edit_data_table_toggle <- renderUI({
       
       req(cleaned_data())
       req(input$column_select)
-
+      
       # When the exclude column button is activated, hide all other input options.
       if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
         return(NULL)
       }
+      
+      current_value <- data_cleaning_input_options()$edit_data_table[data_cleaning_input_options()$questions == input$column_select]
       
       # Button prelude + tooltip.
       text <- span(
@@ -503,7 +529,8 @@ dataUploadServer <- function(id) {
       # Switch.
       switch = switchInput(
         inputId = ns("edit_data_table_toggle"), 
-        label = NULL
+        label = NULL,
+        value = current_value
       )
       
       return(
@@ -514,8 +541,6 @@ dataUploadServer <- function(id) {
       )
     })
     
-    
-
     # Display data for the selected variable in the cleaning phase.
     output$column_output <- renderDT({
       
@@ -527,7 +552,7 @@ dataUploadServer <- function(id) {
       if (!is.null(input$edit_data_table_toggle) && input$edit_data_table_toggle == TRUE) {
         flag = TRUE
       } 
-
+      
       # Only extract the column that was selected by the user.
       data = cleaned_data() %>%
         select(input$column_select)
@@ -541,6 +566,41 @@ dataUploadServer <- function(id) {
       )
       
       return(dt)
+    })
+    
+    # When Save + Apply button is clicked, update the data_cleaning_input_options df to reflect the changes for the 
+    # given column selection.
+    observeEvent(input$save_data_changes, {
+      # Update fields for given column.
+      original_input_options <- data_cleaning_input_options()
+      
+      # Set to true as data has been cleaned by the user.
+      original_input_options$cleaned[original_input_options$questions == input$column_select] <- TRUE
+      # Check if the exclude toggle button has been activated.
+      if (!is.null(input$exclude_toggle) && input$exclude_toggle == TRUE) {
+        original_input_options$exclude_from_analysis[original_input_options$questions == input$column_select] <- TRUE
+        # No need to update other columns.
+        data_cleaning_input_options(original_input_options)
+        return()
+      }
+      
+      original_input_options$exclude_from_analysis[original_input_options$questions == input$column_select] <- FALSE
+      original_input_options$data_type[original_input_options$questions == input$column_select] <- input$column_data_type
+      
+      # Note: Unlike the exclude toggle (which is a materialSwitch), the set as categorical switch is different (it is a switchInput object).
+      #       This type of switch is not set to NULL, just TRUE and FALSE (meaning there is no need for the complex if statment).
+      original_input_options$treat_as_categorical[original_input_options$questions == input$column_select] <- input$categorical_toggle
+
+      # Set the slider's min and max values (only if the data type is numeric).
+      if (input$column_data_type == 2) {
+        original_input_options$filter_min_value[original_input_options$questions == input$column_select] <- input$numeric_filter_slider[1]
+        original_input_options$filter_max_value[original_input_options$questions == input$column_select] <- input$numeric_filter_slider[2]
+      }
+      
+      original_input_options$edit_data_table[original_input_options$questions == input$column_select] <- input$edit_data_table_toggle
+      
+      # Save changes.
+      data_cleaning_input_options(original_input_options)
     })
     
   })
