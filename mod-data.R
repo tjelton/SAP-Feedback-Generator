@@ -146,6 +146,13 @@ dataUploadUI <- function(id) {
   )
 }
 
+convert_non_numeric_to_character <- function(column) {
+  if (is.numeric(column) || is.character(column)) {
+    return(column)
+  } else {
+    return(as.character(column))
+  }
+}
 
 dataUploadServer <- function(id) {
   moduleServer(id, function(input, output, session) {
@@ -158,9 +165,13 @@ dataUploadServer <- function(id) {
       # infile <- input$data_file
       #data <- read_excel(infile$datapath, sheet = "Form Responses 1")
       data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet = "Form Responses 1")
-      # Change NA values in character columns to the empty string.
+      
       data <- data %>%
-        mutate(across(where(is.character), ~ ifelse(is.na(.), "", .)))
+        # Change NA values in character columns to the empty string.
+        mutate(across(where(is.character), ~ ifelse(is.na(.), "", .))) %>%
+        
+        # Convert all not standard data types (for columns) to character.
+        mutate(across(everything(), convert_non_numeric_to_character))
       
       return(data)
     })
