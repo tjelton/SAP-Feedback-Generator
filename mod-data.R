@@ -252,10 +252,10 @@ dataUploadServer <- function(id) {
     output$variable_names_button <- renderUI({
       
       # Check that data has been uploaded.
-      req(cleaned_data())
+      req(original_data())
       
       # Button to choose the different variables.
-      options = colnames(cleaned_data())
+      options = colnames(original_data())
       
       # Button prelude + tooltip.
       text <- span(
@@ -286,7 +286,6 @@ dataUploadServer <- function(id) {
     # If the user selects yes to removing this column from the remainder of the anlaysis, all other options will dissapear.
     output$keep_data_column_toggle <- renderUI({
       
-      req(cleaned_data())
       req(input$column_select)
       
       current_value <- data_cleaning_input_options()$exclude_from_analysis[data_cleaning_input_options()$questions == input$column_select]
@@ -322,7 +321,6 @@ dataUploadServer <- function(id) {
     # Button to change the data type of the selected column.
     output$column_data_type <- renderUI({
       
-      req(cleaned_data())
       req(input$column_select)
       
       # When the exclude column button is activated, hide all other input options.
@@ -379,7 +377,6 @@ dataUploadServer <- function(id) {
     # Recommend to the user not to store as categorical if the variable is a float or there are many categories.
     output$set_as_categorical <- renderUI({
       
-      req(cleaned_data())
       req(input$column_select)
       
       # When the exclude column button is activated, hide all other input options.
@@ -437,7 +434,6 @@ dataUploadServer <- function(id) {
     # If the data has been classified as numeric, create slider to allow the values to be filtered.
     output$numeric_filter <- renderUI({
       
-      req(cleaned_data())
       req(input$column_select)
       req(input$column_data_type)
       
@@ -505,7 +501,6 @@ dataUploadServer <- function(id) {
     # Toggle which when switched on, allows the user to be able to edit the data table.
     output$edit_data_table_toggle <- renderUI({
       
-      req(cleaned_data())
       req(input$column_select)
       
       # When the exclude column button is activated, hide all other input options.
@@ -541,10 +536,21 @@ dataUploadServer <- function(id) {
       )
     })
     
+    # Get data for the selected variable in the cleaning phase.
+    current_data_column <- reactiveVal()
+    observe({
+      req(cleaned_data())
+      req(input$column_select)
+      
+      column = cleaned_data() %>%
+        select(input$column_select)
+      
+      current_data_column(column)
+    })
+    
     # Display data for the selected variable in the cleaning phase.
     output$column_output <- renderDT({
       
-      req(cleaned_data())
       req(input$column_select)
       
       flag = FALSE
@@ -553,12 +559,8 @@ dataUploadServer <- function(id) {
         flag = TRUE
       } 
       
-      # Only extract the column that was selected by the user.
-      data = cleaned_data() %>%
-        select(input$column_select)
-      
       dt = datatable(
-        data, 
+        current_data_column(), 
         filter="none",
         options = list(lengthChange = FALSE),
         rownames = FALSE,
@@ -568,9 +570,28 @@ dataUploadServer <- function(id) {
       return(dt)
     })
     
-    # When Save + Apply button is clicked, update the data_cleaning_input_options df to reflect the changes for the 
-    # given column selection.
+    # Observe the cell edit event
+    observeEvent(input$column_output_cell_edit, {
+      table_edit = input$column_output_cell_edit
+      value = table_edit$value
+      column_data = current_data_column()
+
+      # If the data type is numeric, you can only except numeric edits.
+      if (is.numeric(column_data[[1]])) {
+        value = suppressWarnings(as.numeric(table_edit$value))
+      } 
+      
+      column_data[table_edit$row, 1] = value
+      current_data_column(column_data)
+
+    })
+    
+    # When Save + Apply button is clicked:
+    # 1) update the data_cleaning_input_options df to reflect the changes for the given column selection.
+    # 2) update the data column to have the steps set in the filter applied.
     observeEvent(input$save_data_changes, {
+      
+      ########## Update data_cleaning_input_options df.
       # Update fields for given column.
       original_input_options <- data_cleaning_input_options()
       
@@ -599,8 +620,15 @@ dataUploadServer <- function(id) {
       
       original_input_options$edit_data_table[original_input_options$questions == input$column_select] <- input$edit_data_table_toggle
       
-      # Save changes.
+      # Save input options changes
       data_cleaning_input_options(original_input_options)
+      
+      ########## Update the data column.
+      data_column <- current_data_column()
+      data <- cleaned_data()
+      data[[input$column_select]] = data_column[[1]]
+      data[[input$column_select]]
+      cleaned_data(data)
     })
     
   })
