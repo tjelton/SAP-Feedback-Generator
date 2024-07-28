@@ -363,8 +363,8 @@ dataUploadServer <- function(id) {
       original_num_rows = nrow(cleaned_data())
       
       choices_radio = list("Sentence" = 1, "Numeric" = 2)
-      # See if greater than 5% is numeric
-      if (na_count / original_num_rows >= 0.05) {
+      # See if greater than 80% is numeric
+      if (na_count / original_num_rows >= 0.8) {
         choices_radio = list("Sentence" = 1)
         current_value = 1
       }
@@ -465,8 +465,8 @@ dataUploadServer <- function(id) {
         temp_data = cleaned_data() %>%
           select(col_name) %>%
           mutate(!!sym(col_name) := as.numeric(!!sym(col_name)))
-        min_value = min(temp_data %>% select(col_name))
-        max_value = max(temp_data %>% select(col_name))
+        min_value = min(temp_data %>% select(col_name), na.rm = TRUE)
+        max_value = max(temp_data %>% select(col_name), na.rm = TRUE)
         
         # Check if the min and max sliders values have been set previously (they are not NA).
         # If they are NA, set to default values.
@@ -624,6 +624,8 @@ dataUploadServer <- function(id) {
       original_input_options$treat_as_categorical[original_input_options$questions == input$column_select] <- input$categorical_toggle
 
       # Set the slider's min and max values (only if the data type is numeric).
+      lower_bound = input$numeric_filter_slider[1]
+      upper_bound = input$numeric_filter_slider[2]
       if (input$column_data_type == 2) {
         original_input_options$filter_min_value[original_input_options$questions == input$column_select] <- input$numeric_filter_slider[1]
         original_input_options$filter_max_value[original_input_options$questions == input$column_select] <- input$numeric_filter_slider[2]
@@ -638,8 +640,29 @@ dataUploadServer <- function(id) {
       data_column <- current_data_column()
       data <- cleaned_data()
       data[[input$column_select]] = data_column[[1]]
-      data[[input$column_select]]
       cleaned_data(data)
+      
+      # Change data type to fit with user choice.
+      data_type <- input$column_data_type
+      if (data_type == 1) {
+        # 1 means character.
+        data = data %>%
+          mutate(!!sym(input$column_select) := as.character(!!sym(input$column_select)))
+      } else {
+        # 2 means numeric.
+        data = data %>%
+          mutate(!!sym(input$column_select) := as.numeric(!!sym(input$column_select))) %>%
+          # Replace values outside the numeric range to be NA.
+          mutate(!!sym(input$column_select) := ifelse(!!sym(input$column_select) < lower_bound | !!sym(input$column_select) > upper_bound, 
+                                                     NA, !!sym(input$column_select)))
+
+      }
+      
+      cleaned_data(data)
+      
+      
+      
+    
     })
     
   })
