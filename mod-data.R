@@ -120,7 +120,7 @@ dataUploadUI <- function(id) {
                             # Button to reset the current data column back to the original data.
                             actionButton(
                               ns("reset_changes"),
-                              "Re-Set",
+                              "Reset",
                               class = "btn-danger"
                             ) %>%
                               tooltip("Click to reset the current selected data column to the original data"),    
@@ -659,10 +659,29 @@ dataUploadServer <- function(id) {
       }
       
       cleaned_data(data)
-      
-      
-      
+    })
     
+    # When "Reset" button is clicked: set the data for the column to be the same as that originally input.
+    observeEvent(input$reset_changes, {
+      
+      # Get original data.
+      original_data <- original_data() %>%
+        select(input$column_select)
+      
+      # If the original data was numeric, reset data cleaning options.
+      if (is.numeric(original_data[[1]])) {
+        temp = data_cleaning_input_options()
+        temp$data_type[temp$questions == input$column_select] = 2
+        temp$filter_min_value[temp$questions == input$column_select] = NA
+        temp$filter_max_value[temp$questions == input$column_select] = NA
+        data_cleaning_input_options(temp)
+      }
+      
+      # Update data.
+      data <- cleaned_data()
+      data[[input$column_select]] = original_data[[1]]
+      cleaned_data(data)
+      
     })
     
   })
