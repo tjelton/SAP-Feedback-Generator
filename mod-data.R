@@ -44,16 +44,16 @@ dataUploadUI <- function(id) {
                           card(
                             height = 270,
                             HTML("
-                    <p>File upload requirements:<br>
-                    <ul>
-                      <li>Only excel files (extension .xlsx) are currently supported.</li>
-                      <li>The excel file must have the survey data on a tab named \"Form Responses 1\".</li>
-                      <li>The first row of the spreadsheet must contain the column names, and each row underneath represents the responses from
-                      a single person.</li>
-                      <li>More file upload types coming soon...</li>
-                      <li>Once uploaded, the file contents will be displayed in the table below. This is the original data as you uploaded it (it will
-                      not contains the updates that you make in the following stages).</li>
-                    </ul></p>"
+                              <p><b>File upload requirements:</b><br>
+                              <ul>
+                                <li>Only excel files (extension .xlsx) are currently supported.</li>
+                                <li>The excel file must have the survey data on a tab named \"Form Responses 1\".</li>
+                                <li>The first row of the spreadsheet must contain the column names, and each row underneath represents the responses from
+                                a single person.</li>
+                                <li>More file upload types coming soon...</li>
+                                <li>Once uploaded, the file contents will be displayed in the table below. This is the original data as you uploaded it (it will
+                                not contains the updates that you make in the following stages).</li>
+                              </ul></p>"
                             ),
                           )
                    ),
@@ -92,7 +92,32 @@ dataUploadUI <- function(id) {
                  HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
                  
                  HTML("<br>"),
-                 p("Some information here on data cleaning... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
+                 
+                 fluidRow(
+                   
+                   # Info 
+                   column(6,
+                      card(
+                        height = 270,
+                        HTML("
+                            <p><b>Data Cleaning Steps:</b><br>
+                               <ul>
+                                 <li>For each column, go through and ensure that you are happy with the automatics data classifications.</li>
+                                 <li>Once satisfied, ensure to click the green \"Save + Appply\" button, even if you made no manual changes.</li>
+                                 <li>There are more advanced data cleaning options that you can choose.</li>
+                                 <li>Don't worry if you make a mistake! You can reset a given column back to the data that your originally uploaded.</li>
+                               </ul>
+                            </p>"),
+                      ),   
+                   ),
+                   
+                   # Columns that need to be cleaned still.
+                   column(6,
+                      uiOutput(outputId = ns("need_cleaning_card")),
+                   ),
+                   
+                 ),
+                 
                  HTML("<br>"),
                  
                  fluidRow(
@@ -133,15 +158,12 @@ dataUploadUI <- function(id) {
                    column(8,
                           DTOutput(outputId = ns("column_output"))
                    )
-                   
                  ),
-                 
         )
       ),
       
       style = "color:black; background:#FFFFFF"
     ),
-    
     
   )
 }
@@ -681,6 +703,62 @@ dataUploadServer <- function(id) {
       data <- cleaned_data()
       data[[input$column_select]] = original_data[[1]]
       cleaned_data(data)
+      
+    })
+    
+    # Values box showing the rows that still need to be cleaned
+    output$need_cleaning_card <- renderUI({
+      
+      req(data_cleaning_input_options)
+      
+      # Get the data columns that have not been cleaned yet.
+      not_cleaned <- data_cleaning_input_options() %>%
+        filter(cleaned == FALSE) %>%
+        select(questions)
+      not_cleaned <- not_cleaned[[1]]
+      
+      n_not_cleaned = length(not_cleaned)
+      
+      # If all columns cleaned, make card green with message indicating all columns are cleaned.
+      if (n_not_cleaned == 0) {
+        return(
+          card(
+            height = 270,
+            HTML("<br><br><br><p><b><center>All columns have been cleaned!</center><b><p>"),
+            style = "background:#9fff9c" # Light green colour
+          )
+        )
+      }
+
+      first_string = paste("<p>Currently, <b>", as.character(n_not_cleaned), " data columns</b> are <b>not cleaned</b>. These include:</p>")
+      if (n_not_cleaned == 1) {
+        first_string = "<p>Currently, <b>1 data column</b> is <b>not cleaned</b>. This is:</p>"
+      }
+      
+      # Return the first five columns to the user as a list.
+      second_string = "<p><ul>"
+      counter = 1
+      while (counter < 5 && counter <= n_not_cleaned) {
+        second_string = paste(second_string, "<li>", not_cleaned[counter], "</li>")
+        counter = counter + 1
+      }
+      # Add ellipses if there are more than five columns needing cleaning.
+      if (counter < n_not_cleaned) {
+        second_string = paste(second_string, "<li>...</li>")
+      }
+      second_string = paste(second_string, "</ul></p>")
+      
+      
+      output = card(
+        height = 270,
+        HTML(first_string),
+        HTML(second_string),
+        style = "background:#ffec82" # Light yellow colour
+      )
+      
+      return(output)
+      
+      
       
     })
     
