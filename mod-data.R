@@ -73,17 +73,16 @@ dataUploadUI <- function(id) {
                  ),
                  
                  conditionalPanel(
-                   
-                   condition = paste0("output['", ns('data_uploaded_flag'), "']"),
-                   h5("Uploaded Data:"),
-                   textOutput("character_tooltip_message"),
-                   DT::dataTableOutput(ns("original_data_table"))
-                   
+                     condition = paste0("output['", ns('data_uploaded_flag'), "']"),
+                     navset_underline(
+                       nav_panel(
+                          "Uploaded Data",
+                          HTML("<br>"),
+                          textOutput("character_tooltip_message"),
+                          DT::dataTableOutput(ns("original_data_table"))
+                       )
+                     ),
                  ),
-                 
-                 
-                 
-                 
         ),
         
         ### Page to start cleaning the data ###
@@ -97,18 +96,18 @@ dataUploadUI <- function(id) {
                    
                    # Info 
                    column(6,
-                      card(
-                        height = 270,
-                        HTML("
-                            <p><b>Data Cleaning Steps:</b><br>
-                               <ul>
-                                 <li>For each column, go through and ensure that you are happy with the automatics data classifications.</li>
-                                 <li>Once satisfied, ensure to click the green \"Save + Appply\" button, even if you made no manual changes.</li>
-                                 <li>There are more advanced data cleaning options that you can choose.</li>
-                                 <li>Don't worry if you make a mistake! You can reset a given column back to the data that your originally uploaded.</li>
-                               </ul>
-                            </p>"),
-                      ),   
+                        card(
+                            height = 270,
+                            HTML("
+                                <p><b>Data Cleaning Steps:</b><br>
+                                   <ul>
+                                     <li>For each column, go through and ensure that you are happy with the automatics data classifications.</li>
+                                     <li>Once satisfied, ensure to click the green \"Save + Appply\" button, even if you made no manual changes.</li>
+                                     <li>There are more advanced data cleaning options that you can choose.</li>
+                                     <li>Don't worry if you make a mistake! You can reset a given column back to the data that your originally uploaded.</li>
+                                   </ul>
+                                </p>"),
+                        ),   
                    ),
                    
                    # Columns that need to be cleaned still.
@@ -118,7 +117,14 @@ dataUploadUI <- function(id) {
                    
                  ),
                  
-                 HTML("<br>"),
+                 # Deliberately left blank.
+                 # Reason for inclusion: formats nicely, and looks consistent with other data cleaning pages.
+                 navset_underline(
+                   nav_panel(
+                     "Cleaning Controls",
+                     HTML("<br>"),
+                   )
+                 ),
                  
                  fluidRow(
                    
@@ -168,30 +174,51 @@ dataUploadUI <- function(id) {
            HTML("<br>"),
            
            fluidRow(
-             # Instructions 
-             column(8,
-                card(
-                  height = 270,
-                  HTML("
-                    <p><b>Finalise Data Cleaning:</b><br>
-                       <ul>
-                         <li>Point 1</li>
-                         <li>Point 2</li>
-                         <li>Point 3</li>
-                         <li>Point 4</li>
-                       </ul>
-                    </p>"),
-                ),   
-             ),
-             
-             # Button to finalise decision.
-             column(4,
-                card(
-                  HTML("<p><b><u>Button</u></b></p>"),
-                  style = "background:#cce4fc" # Light blue colour
-                )     
-             ),
-             
+               # Instructions 
+               column(8,
+                    card(
+                      height = 270,
+                      HTML("
+                        <p><b>Finalise Data Cleaning:</b><br>
+                           <ul>
+                             <li>Point 1</li>
+                             <li>Point 2</li>
+                             <li>Point 3</li>
+                             <li>Point 4</li>
+                           </ul>
+                        </p>"),
+                    ),   
+               ),
+               
+               # Button to finalise decision.
+               column(4,
+                    card(
+                      HTML("<p><b><u>Button</u></b></p>"),
+                      style = "background:#cce4fc" # Light blue colour
+                    )     
+               ),
+           ),
+           
+           # Cleaned data table display.
+           conditionalPanel(
+               condition = paste0("output['", ns('data_uploaded_flag'), "']"),
+               
+               navset_underline(
+                 
+                 nav_panel(
+                   "Cleaned Data",
+                   HTML("<br>"),
+                   DT::dataTableOutput(ns("cleaned_data_table"))
+                 ),
+                 
+                 nav_panel(
+                   "Data Classifications",
+                   HTML("<br>"),
+                   h5("TEST"),
+                 ),
+                 
+               ),
+
            ),
         ),
         
@@ -243,7 +270,8 @@ dataUploadServer <- function(id) {
     
     # Flag for when data has been uploaded.
     output$data_uploaded_flag <- reactive({
-      val <- !(is.null(input$data_file))
+      #val <- !(is.null(input$data_file)) <FIX WHEN NOT TESTING ANYMORE>
+      val <- TRUE
     })
     # To make the flag output reactive to be accessed from the ui.
     outputOptions(output, 'data_uploaded_flag', suspendWhenHidden=FALSE)
@@ -784,8 +812,7 @@ dataUploadServer <- function(id) {
         second_string = paste(second_string, "<li>...</li>")
       }
       second_string = paste(second_string, "</ul></p>")
-      
-      
+
       output = card(
         height = 270,
         HTML(first_string),
@@ -794,9 +821,29 @@ dataUploadServer <- function(id) {
       )
       
       return(output)
+    })
+    
+    # Render the cleaned data
+    output$cleaned_data_table <- renderDT({
+      req(cleaned_data())
       
+      # Find all columns that are character type.
+      data = cleaned_data()
+      character_type_column_indices = c()
+      for (i in seq_along(data)) {
+        if (is.character(data[[i]])) {
+          character_type_column_indices = c(character_type_column_indices, i)
+        }
+      }
       
-      
+      datatable(data, options = list(scrollX = TRUE, columnDefs = list(list(
+        targets = character_type_column_indices,
+        render = JS(
+          "function(data, type, row, meta) {",
+          "return type === 'display' && data.length > 100 ?",
+          "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
+          "}")
+      ))), callback = JS('table.page(3).draw(false);'))
     })
     
   })
