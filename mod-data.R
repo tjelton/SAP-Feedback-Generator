@@ -205,16 +205,18 @@ dataUploadUI <- function(id) {
                
                navset_underline(
                  
+                 # Output the entire cleaned data set.
                  nav_panel(
                    "Cleaned Data",
                    HTML("<br>"),
                    DT::dataTableOutput(ns("cleaned_data_table"))
                  ),
                  
+                 # Output the classification of each variable.
                  nav_panel(
                    "Data Classifications",
                    HTML("<br>"),
-                   h5("TEST"),
+                   DT::dataTableOutput(ns("cleaned_data_types"))
                  ),
                  
                ),
@@ -825,10 +827,22 @@ dataUploadServer <- function(id) {
     
     # Render the cleaned data
     output$cleaned_data_table <- renderDT({
-      req(cleaned_data())
       
-      # Find all columns that are character type.
+      req(cleaned_data())
+      req(data_cleaning_input_options())
+      
       data = cleaned_data()
+      
+      options = data_cleaning_input_options()
+      if (is.null(options)) {
+        return(NULL)
+      }
+      
+      # Find columns that the user has opted to exclude from analysis.
+      exclude = options$questions[options$exclude_from_analysis == TRUE]
+      data = data %>% select(-one_of(exclude))
+
+      # Find all columns that are character type.
       character_type_column_indices = c()
       for (i in seq_along(data)) {
         if (is.character(data[[i]])) {
@@ -844,6 +858,40 @@ dataUploadServer <- function(id) {
           "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
           "}")
       ))), callback = JS('table.page(3).draw(false);'))
+    })
+    
+    # Display data for the selected variable in the cleaning phase.
+    output$cleaned_data_types <- renderDT({
+      
+      req(data_cleaning_input_options())
+      
+      # Check that the options are not empty.
+      data = data_cleaning_input_options()
+      if (is.null(data)) {
+        return(NULL)
+      }
+      
+      data = data %>%
+        select(questions, data_type, treat_as_categorical) %>%
+        rename(Column = questions,
+               `Data Type` = data_type,
+               `Categorical` = treat_as_categorical) %>%
+        mutate(
+          `Data Type` = case_when(
+            `Data Type` == 1 ~ "Character",
+            `Data Type` == 2 ~ "Numeric",
+            TRUE ~ "Other"
+          )
+        )
+
+      dt = datatable(
+        data, 
+        filter="none",
+        options = list(lengthChange = FALSE),
+        rownames = FALSE,
+      )
+      
+      return(dt)
     })
     
   })
