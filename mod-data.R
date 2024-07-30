@@ -35,6 +35,7 @@ dataUploadUI <- function(id) {
         # When the file is uploaded, a data table viewer of the original data.
         tabPanel("Step 1) Data Upload",
                  HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
+                 HTML("<br>"),
                  
                  # Info for how to upload the file and upload button.
                  fluidRow(
@@ -90,7 +91,6 @@ dataUploadUI <- function(id) {
         # Then can change the classification of the variable and do some data filtering/cleaning.
         tabPanel("Step 2) Data Cleaning",
                  HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
-                 
                  HTML("<br>"),
                  
                  fluidRow(
@@ -159,11 +159,48 @@ dataUploadUI <- function(id) {
                           DTOutput(outputId = ns("column_output"))
                    )
                  ),
-        )
+        ),
+        
+        # Page for the user to check that they are happy with the data cleaning before progressing to the analysis stage.
+        # The user will have to press a check mark to indicate that they are happy before continuing.
+        tabPanel("Step 3) Finalise Data",
+           HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
+           HTML("<br>"),
+           
+           fluidRow(
+             # Instructions 
+             column(8,
+                card(
+                  height = 270,
+                  HTML("
+                    <p><b>Finalise Data Cleaning:</b><br>
+                       <ul>
+                         <li>Point 1</li>
+                         <li>Point 2</li>
+                         <li>Point 3</li>
+                         <li>Point 4</li>
+                       </ul>
+                    </p>"),
+                ),   
+             ),
+             
+             # Button to finalise decision.
+             column(4,
+                card(
+                  HTML("<p><b><u>Button</u></b></p>"),
+                  style = "background:#cce4fc" # Light blue colour
+                )     
+             ),
+             
+           ),
+        ),
+        
       ),
-      
+
       style = "color:black; background:#FFFFFF"
     ),
+    
+   
     
   )
 }
