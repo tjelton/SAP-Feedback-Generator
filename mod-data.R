@@ -11,15 +11,8 @@ dataUploadUI <- function(id) {
   ns <- NS(id)
   tagList(
     
-    card(
-      HTML("<center>"),
-      h4("Step 1: Data Upload"),
-      HTML("<br>"),
-      p("General information here... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pharetra et nibh ac varius. Quisque dapibus consectetur ex. Fusce sit amet dui erat. Sed tellus elit, tempor vel egestas a, viverra nec erat. Nullam nec felis posuere, faucibus justo eu, luctus eros. Cras consequat mauris sed ante lacinia, ut lobortis lorem dignissim. Nunc elementum rhoncus ex, nec pulvinar ex ullamcorper et. Praesent sodales, lorem nec fermentum pretium, tortor purus vestibulum arcu, eu egestas turpis est nec dui."),
-      HTML("</center>"),
-      style = "color:black; background:#c8cacc"
-    ),
-    
+    uiOutput(outputId = ns("value_box_steps")),
+
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "navpill_styles.css")
     ),
@@ -65,7 +58,7 @@ dataUploadUI <- function(id) {
                           br(),
                           card(
                             HTML("<p><b><u>File Input</u></b></p>"),
-                            #fileInput(ns("data_file"), ""),
+                            fileInput(ns("data_file"), ""),
                             style = "background:#cce4fc" # Light blue colour
                           )
                    )
@@ -181,10 +174,12 @@ dataUploadUI <- function(id) {
                       HTML("
                         <p><b>Finalise Data Cleaning:</b><br>
                            <ul>
-                             <li>Point 1</li>
-                             <li>Point 2</li>
-                             <li>Point 3</li>
-                             <li>Point 4</li>
+                             <li>The \"Cleaned Data\" table below contains the final cleaned data alligned with your choices in step 2. You can also
+                             check the \"Data Classifications\" table as a quick check that you are happy with the current data classifactions.</li>
+                             <li>Once you are satisfied that the data is cleaned to your preference, proceed to press the \"Complete Data Cleaning\" 
+                             button. Note that clicking this button cannot be undone without clearing your future data analysis.</li>
+                             <li>A warning message will appear if you have not yet manually checked each of the data columns. However, you can still proceed
+                             to press the \"Complete Data Cleaning\" button if you are satisfied with the current data state.</li>
                            </ul>
                         </p>"),
                     ),   
@@ -246,13 +241,99 @@ dataUploadServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+    step_1_completed <- reactiveVal(FALSE)
+    step_2_completed <- reactiveVal(FALSE)
+    step_3_completed <- reactiveVal(FALSE)
+    
+    # Output for the row of value boxes at the top of the screen, showing the steps that have been completed.
+    output$value_box_steps <- renderUI({
+      
+      ########## VALUE BOX 1 (Step 1) ########## 
+      vb_1_theme = "warning"
+      vb_1_string = "<p>Click \"Step 1) Data Upload\" below.</p>"
+      vb_1_icon = "exclamation-octagon"
+      if (step_1_completed()) {
+        vb_1_theme = "success"
+        vb_1_string = "<p>Completed!<br><br></p>"
+        vb_1_icon = "arrow-right"
+      }
+      step_1_value_box <- value_box(
+        p("Step 1"),
+        value = "Upload",
+        HTML(vb_1_string),
+        showcase = bs_icon(vb_1_icon),
+        showcase_layout = "top right",
+        theme = vb_1_theme,
+      )
+      
+      ########## VALUE BOX 2 (Step 2) ########## 
+      step_2_value_box <- NULL
+      if (step_1_completed()) {
+        vb_2_theme = "warning"
+        vb_2_string = "<p>Click \"Step 2) Data Cleaning\" below.</p>"
+        vb_2_icon = "exclamation-octagon"
+        if (step_2_completed()) {
+          vb_2_theme = "success"
+          vb_2_string = "<p>Completed!<br><br></p>"
+          vb_2_icon = "arrow-right"
+        }
+        step_2_value_box <- value_box(
+          p("Step 2"),
+          value = p("Cleaning"),
+          HTML(vb_2_string),
+          showcase = bs_icon(vb_2_icon),
+          showcase_layout = "top right",
+          theme = vb_2_theme,
+        )
+      }
+      
+      ########## VALUE BOX 3 (Step 3) ########## 
+      step_3_value_box <- NULL
+      if (step_1_completed() && step_2_completed()) {
+        vb_3_theme = "warning"
+        vb_3_string = "<p>Click \"Step 3) Finalise Data\" below.</p>"
+        vb_3_icon = "exclamation-octagon"
+        if (step_3_completed()) {
+          vb_3_theme = "success"
+          vb_3_string = "<p>Completed!<br><br></p>"
+          vb_3_icon = "arrow-right"
+        }
+        step_3_value_box <- value_box(
+          p("Step 3"),
+          value = p("Finalise"),
+          HTML(vb_3_string),
+          showcase = bs_icon(vb_3_icon),
+          showcase_layout = "top right",
+          theme = vb_3_theme,
+        )
+      }
+      
+      
+      return(
+        tagList(
+          fluidRow(
+            column(4, step_1_value_box),
+            column(4, step_2_value_box),
+            column(4, step_3_value_box),
+          )
+        )
+      )
+      
+      
+    })
+    
     # Reactive expression to read the uploaded file
     original_data <- reactive({
-      # if(is.null(input$data_file)) return(NULL)
-      # req(input$data_file)  # Ensure a file is uploaded
-      # infile <- input$data_file
-      #data <- read_excel(infile$datapath, sheet = "Form Responses 1")
-      data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet = "Form Responses 1")
+      if(is.null(input$data_file)) return(NULL)
+      req(input$data_file)  # Ensure a file is uploaded
+      
+      # Read in data
+      infile <- input$data_file
+      data <- read_excel(infile$datapath, sheet = "Form Responses 1")
+      
+      step_1_completed(TRUE)
+      
+      #data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet = "Form Responses 1")
       
       data <- data %>%
         # Change NA values in character columns to the empty string.
@@ -262,7 +343,7 @@ dataUploadServer <- function(id) {
         mutate(across(everything(), convert_non_numeric_to_character))
       
       return(data)
-    })
+    }) 
     
     # Data store for data that can be modified.
     modified_data <- reactive({
@@ -272,8 +353,8 @@ dataUploadServer <- function(id) {
     
     # Flag for when data has been uploaded.
     output$data_uploaded_flag <- reactive({
-      #val <- !(is.null(input$data_file)) <FIX WHEN NOT TESTING ANYMORE>
-      val <- TRUE
+      val <- !(is.null(input$data_file))
+      #val <- TRUE
     })
     # To make the flag output reactive to be accessed from the ui.
     outputOptions(output, 'data_uploaded_flag', suspendWhenHidden=FALSE)
@@ -788,6 +869,7 @@ dataUploadServer <- function(id) {
       
       # If all columns cleaned, make card green with message indicating all columns are cleaned.
       if (n_not_cleaned == 0) {
+        step_2_completed(TRUE)
         return(
           card(
             height = 270,
