@@ -870,13 +870,7 @@ dataUploadServer <- function(id) {
       # If all columns cleaned, make card green with message indicating all columns are cleaned.
       if (n_not_cleaned == 0) {
         step_2_completed(TRUE)
-        return(
-          card(
-            height = 270,
-            HTML("<br><br><br><p><b><center>All columns have been cleaned!</center><b><p>"),
-            style = "background:#9fff9c" # Light green colour
-          )
-        )
+        return(NULL)
       }
 
       first_string = paste("<p>Currently, <b>", as.character(n_not_cleaned), " data columns</b> are <b>not cleaned</b>. These include:</p>")
