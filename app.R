@@ -1,11 +1,15 @@
 library(shiny)
-source("mod-data.R")
 
+source("mod_data_ui.R")
+source("mod_data_srv.R")
+
+options(shiny.autoreload = TRUE) 
 
 library(readxl)
 library(tidyverse)
 library(DT)
 library(bslib)
+
 
 data <- read_excel("Student Feedback (Semester 1 2024) (Responses).xlsx", sheet = "Form Responses 1")
 
@@ -55,7 +59,7 @@ ui  <- tagList(
     
     tabPanel(
       # Tab Title
-      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">1) Data Upload</h5>'),
+      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">Upload Data</h5>'),
              
        dataUploadUI("data_upload")
        
