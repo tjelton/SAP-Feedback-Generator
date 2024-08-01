@@ -62,7 +62,6 @@ dataUploadUI <- function(id) {
                             style = "background:#cce4fc" # Light blue colour
                           )
                    )
-                   
                  ),
                  
                  conditionalPanel(
@@ -82,82 +81,97 @@ dataUploadUI <- function(id) {
         # Option to select a variable that appears in the data set.
         # Then can change the classification of the variable and do some data filtering/cleaning.
         tabPanel("Step 2) Data Cleaning",
-                 HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
-                 HTML("<br>"),
+
+             HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
+             HTML("<br>"),
+             
+             # Message prompting the user to update data before proceeding.
+             conditionalPanel(
+               condition = paste0("output['", ns('data_uploaded_flag'), "'] !== true"),
+               card(
+                 HTML("<br><br><center><b>No data uploaded. Proceed to \"Step 1) Data Upload\"</b></center><br><br>"),
+                 style = "background:#fccccc" # Light red colour.
+               )
+             ),
+             
+             # Display the remainder of the page once the data has been uploaded.
+             conditionalPanel(
+               condition = paste0("output['", ns('data_uploaded_flag'), "'] == true"),
+               
+               fluidRow(
                  
-                 fluidRow(
-                   
-                   # Info 
-                   column(6,
+                 # Info 
+                 column(6,
+                      card(
+                        height = 270,
+                        HTML("
+                            <p><b>Data Cleaning Steps:</b><br>
+                               <ul>
+                                 <li>For each column, go through and ensure that you are happy with the automatics data classifications.</li>
+                                 <li>Once satisfied, ensure to click the green \"Save + Appply\" button, even if you made no manual changes.</li>
+                                 <li>There are more advanced data cleaning options that you can choose.</li>
+                                 <li>Don't worry if you make a mistake! You can reset a given column back to the data that your originally uploaded.</li>
+                               </ul>
+                            </p>"),
+                      ),   
+                 ),
+                 
+                 # Columns that need to be cleaned still.
+                 column(6,
+                    uiOutput(outputId = ns("need_cleaning_card")),
+                 ),
+                 
+               ),
+               
+               # Deliberately left blank.
+               # Reason for inclusion: formats nicely, and looks consistent with other data cleaning pages.
+               navset_underline(
+                 nav_panel(
+                   "Cleaning Controls",
+                   HTML("<br>"),
+                 )
+               ),
+               
+               fluidRow(
+                 
+                 # Side bar with data cleaning button choices
+                 column(4,
                         card(
-                            height = 270,
-                            HTML("
-                                <p><b>Data Cleaning Steps:</b><br>
-                                   <ul>
-                                     <li>For each column, go through and ensure that you are happy with the automatics data classifications.</li>
-                                     <li>Once satisfied, ensure to click the green \"Save + Appply\" button, even if you made no manual changes.</li>
-                                     <li>There are more advanced data cleaning options that you can choose.</li>
-                                     <li>Don't worry if you make a mistake! You can reset a given column back to the data that your originally uploaded.</li>
-                                   </ul>
-                                </p>"),
-                        ),   
-                   ),
-                   
-                   # Columns that need to be cleaned still.
-                   column(6,
-                      uiOutput(outputId = ns("need_cleaning_card")),
-                   ),
-                   
+                          HTML("<p><b><u><center>Cleaning Options</center></u></b></p>"),
+                          
+                          uiOutput(outputId = ns("variable_names_button")),
+                          uiOutput(outputId = ns("keep_data_column_toggle")),
+                          uiOutput(outputId = ns("column_data_type")),
+                          uiOutput(outputId = ns("set_as_categorical")),
+                          uiOutput(outputId = ns("numeric_filter")),
+                          uiOutput(outputId = ns("edit_data_table_toggle")),
+                          
+                          # Button to save and apply the data changes.
+                          actionButton(
+                            ns("save_data_changes"), 
+                            "Save + Apply",
+                            class = "btn-success"
+                          ) %>% 
+                            tooltip("Click to save the data cleaning changes."),
+                          
+                          # Button to reset the current data column back to the original data.
+                          actionButton(
+                            ns("reset_changes"),
+                            "Reset",
+                            class = "btn-danger"
+                          ) %>%
+                            tooltip("Click to reset the current selected data column to the original data"),    
+                          
+                          style = "background:#cce4fc" # Light blue colour
+                        )
                  ),
                  
-                 # Deliberately left blank.
-                 # Reason for inclusion: formats nicely, and looks consistent with other data cleaning pages.
-                 navset_underline(
-                   nav_panel(
-                     "Cleaning Controls",
-                     HTML("<br>"),
-                   )
-                 ),
-                 
-                 fluidRow(
-                   
-                   # Side bar with data cleaning button choices
-                   column(4,
-                          card(
-                            HTML("<p><b><u><center>Cleaning Options</center></u></b></p>"),
-                            
-                            uiOutput(outputId = ns("variable_names_button")),
-                            uiOutput(outputId = ns("keep_data_column_toggle")),
-                            uiOutput(outputId = ns("column_data_type")),
-                            uiOutput(outputId = ns("set_as_categorical")),
-                            uiOutput(outputId = ns("numeric_filter")),
-                            uiOutput(outputId = ns("edit_data_table_toggle")),
-                            
-                            # Button to save and apply the data changes.
-                            actionButton(
-                              ns("save_data_changes"), 
-                              "Save + Apply",
-                              class = "btn-success"
-                            ) %>% 
-                              tooltip("Click to save the data cleaning changes."),
-                            
-                            # Button to reset the current data column back to the original data.
-                            actionButton(
-                              ns("reset_changes"),
-                              "Reset",
-                              class = "btn-danger"
-                            ) %>%
-                              tooltip("Click to reset the current selected data column to the original data"),    
-                            
-                            style = "background:#cce4fc" # Light blue colour
-                          )
-                   ),
-                   
-                   # Column Output
-                   column(8,
-                          DTOutput(outputId = ns("column_output"))
-                   )
-                 ),
+                 # Column Output
+                 column(8,
+                    DTOutput(outputId = ns("column_output"))
+                 )
+               ),
+            ),
         ),
         
         # Page for the user to check that they are happy with the data cleaning before progressing to the analysis stage.
@@ -166,22 +180,34 @@ dataUploadUI <- function(id) {
            HTML('<hr style="border: 0; border-top: 2px solid #232324; margin: 10px 0 15px 0;">'),
            HTML("<br>"),
            
-           fluidRow(
+           # Message prompting the user to update data before proceeding.
+           conditionalPanel(
+             condition = paste0("output['", ns('data_uploaded_flag'), "'] !== true"),
+             card(
+               HTML("<br><br><center><b>No data uploaded. Proceed to \"Step 1) Data Upload\"</b></center><br><br>"),
+               style = "background:#fccccc" # Light red colour.
+             )
+           ),
+           
+           conditionalPanel(
+             condition = paste0("output['", ns('data_uploaded_flag'), "'] == true"),
+             
+             fluidRow(
                # Instructions 
                column(8,
                     card(
-                      height = 270,
+                      height = 300,
                       HTML("
-                        <p><b>Finalise Data Cleaning:</b><br>
-                           <ul>
-                             <li>The \"Cleaned Data\" table below contains the final cleaned data alligned with your choices in step 2. You can also
-                             check the \"Data Classifications\" table as a quick check that you are happy with the current data classifactions.</li>
-                             <li>Once you are satisfied that the data is cleaned to your preference, proceed to press the \"Complete Data Cleaning\" 
-                             button. Note that clicking this button cannot be undone without clearing your future data analysis.</li>
-                             <li>A warning message will appear if you have not yet manually checked each of the data columns. However, you can still proceed
-                             to press the \"Complete Data Cleaning\" button if you are satisfied with the current data state.</li>
-                           </ul>
-                        </p>"),
+                      <p><b>Finalise Data Cleaning:</b><br>
+                         <ul>
+                           <li>The \"Cleaned Data\" table below contains the final cleaned data alligned with your choices in step 2. You can also
+                           check the \"Data Classifications\" table as a quick check that you are happy with the current data classifactions.</li>
+                           <li>Once you are satisfied that the data is cleaned to your preference, proceed to press the \"Complete Data Cleaning\" 
+                           button. Note that clicking this button cannot be undone without clearing your future data analysis.</li>
+                           <li>A warning message will appear if you have not yet manually checked each of the data columns. However, you can still proceed
+                           to press the \"Complete Data Cleaning\" button if you are satisfied with the current data state.</li>
+                         </ul>
+                      </p>"),
                     ),   
                ),
                
@@ -192,14 +218,9 @@ dataUploadUI <- function(id) {
                       style = "background:#cce4fc" # Light blue colour
                     )     
                ),
-           ),
-           
-           # Cleaned data table display.
-           conditionalPanel(
-               condition = paste0("output['", ns('data_uploaded_flag'), "']"),
                
+               # Cleaned data table display.
                navset_underline(
-                 
                  # Output the entire cleaned data set.
                  nav_panel(
                    "Cleaned Data",
@@ -213,12 +234,12 @@ dataUploadUI <- function(id) {
                    HTML("<br>"),
                    DT::dataTableOutput(ns("cleaned_data_types"))
                  ),
-                 
                ),
-
+               
+             ),
            ),
+
         ),
-        
       ),
 
       style = "color:black; background:#FFFFFF"
