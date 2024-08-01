@@ -57,7 +57,7 @@ dataUploadUI <- function(id) {
                           br(),
                           br(),
                           card(
-                            HTML("<p><b><u>File Input</u></b></p>"),
+                            HTML("<p><b><u><center>File Input</center></u></b></p>"),
                             fileInput(ns("data_file"), ""),
                             style = "background:#cce4fc" # Light blue colour
                           )
@@ -198,25 +198,28 @@ dataUploadUI <- function(id) {
                             card(
                               height = 300,
                               HTML("
-                      <p><b>Finalise Data Cleaning:</b><br>
-                         <ul>
-                           <li>The \"Cleaned Data\" table below contains the final cleaned data alligned with your choices in step 2. You can also
-                           check the \"Data Classifications\" table as a quick check that you are happy with the current data classifactions.</li>
-                           <li>Once you are satisfied that the data is cleaned to your preference, proceed to press the \"Complete Data Cleaning\" 
-                           button. Note that clicking this button cannot be undone without clearing your future data analysis.</li>
-                           <li>A warning message will appear if you have not yet manually checked each of the data columns. However, you can still proceed
-                           to press the \"Complete Data Cleaning\" button if you are satisfied with the current data state.</li>
-                         </ul>
-                      </p>"),
+                              <p><b>Finalise Data Cleaning:</b><br>
+                                 <ul>
+                                   <li>The \"Cleaned Data\" table below contains the final cleaned data alligned with your choices in step 2. You can also
+                                   check the \"Data Classifications\" table as a quick check that you are happy with the current data classifactions.</li>
+                                   <li>Once you are satisfied that the data is cleaned to your preference, proceed to press the \"Lock Data\" 
+                                   button. Note that clicking this button cannot be undone without clearing your future data analysis.</li>
+                                   <li>A warning message will appear if you have not yet manually checked each of the data columns. However, you can still proceed
+                                   to press the \"Complete Data Cleaning\" button if you are satisfied with the current data state.</li>
+                                 </ul>
+                              </p>"),
                             ),   
                      ),
                      
                      # Button to finalise decision.
                      column(4,
                             card(
-                              HTML("<p><b><u>Button</u></b></p>"),
+                              HTML("<p><b><u><center>Finalise Data</center></u></b></p>"),
+                              uiOutput(outputId = ns("warning_step_3_not_all_cleaned")),
+                              HTML("<p><center>Before pressing \"Lock Data\", check you are happy with the cleaned data below.</center></p><br>"),
+                              actionButton(ns("lock_data"), "Lock Data", class = "btn-danger"),
                               style = "background:#cce4fc" # Light blue colour
-                            )     
+                            ),
                      ),
                      
                      # Cleaned data table display.

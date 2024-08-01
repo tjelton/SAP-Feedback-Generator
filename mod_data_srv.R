@@ -74,7 +74,7 @@ dataUploadServer <- function(id) {
         if (step_3_completed()) {
           vb_3_theme = "success"
           vb_3_string = "<p>Completed!<br><br></p>"
-          vb_3_icon = "arrow-right"
+          vb_3_icon = "check2"
         }
         step_3_value_box <- value_box(
           p("Step 3"),
@@ -86,7 +86,6 @@ dataUploadServer <- function(id) {
         )
       }
       
-      
       return(
         tagList(
           fluidRow(
@@ -96,7 +95,6 @@ dataUploadServer <- function(id) {
           )
         )
       )
-      
       
     })
     
@@ -747,6 +745,24 @@ dataUploadServer <- function(id) {
       
       return(dt)
     })
+    
+    # Simple text that displays if not all the columns are clean.
+    output$warning_step_3_not_all_cleaned <- renderUI({
+      req(data_cleaning_input_options())
+      if (step_2_completed() == FALSE) {
+        return(
+          HTML("<center><p>Not all data columns have been cleaned. Are you sure you want to proceed?</p></center>")
+        )
+      } 
+      return(NULL)
+    })
+    
+    observeEvent(input$lock_data, {
+      step_2_completed(TRUE)
+      step_3_completed(TRUE)
+      
+    })
+    
     
   })
 }
