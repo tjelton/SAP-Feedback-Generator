@@ -548,6 +548,11 @@ dataUploadServer <- function(id) {
     # 2) update the data column to have the steps set in the filter applied.
     observeEvent(input$save_data_changes, {
       
+      # If the data lock is active, ignore all changes.
+      if (data_locked_reactive()) {
+        return()
+      }
+      
       ########## Update data_cleaning_input_options df.
       # Update fields for given column.
       original_input_options <- data_cleaning_input_options()

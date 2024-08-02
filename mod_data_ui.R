@@ -19,6 +19,7 @@ dataUploadUI <- function(id) {
         HTML("<center><b><p>Data Lock</p></b></center>"),
         HTML("<p>You have previously completed your data cleaning, and locked in your data. You are able to 
              redo the data cleaning, but this will <b>reset</b> all analysis you have previously completed.<p>"),
+        HTML("<p>Once the data lock is in place, you will be unable to make any data cleaning changes.</p>"),
         HTML("<p><b><i>Do you want to unlock the data (this will clear any analysis)?</i></b></p>"),
         actionButton(ns("unlcok_data"), "Unlock Data", class = "btn-danger", width = "20%"),
         style = "background:#fccccc" # Light red colour.
@@ -69,13 +70,17 @@ dataUploadUI <- function(id) {
                    
                    # Upload
                    column(4,
-                          br(),
-                          br(),
-                          card(
-                            HTML("<p><b><u><center>File Input</center></u></b></p>"),
-                            fileInput(ns("data_file"), ""),
-                            style = "background:#cce4fc" # Light blue colour
-                          )
+                          # Only display the file upload button if data has not yet been uploaded yet.
+                          conditionalPanel(
+                            condition = paste0("output['", ns('data_uploaded_flag'), "'] !== true"),
+                            br(),
+                            br(),
+                            card(
+                              HTML("<p><b><u><center>File Input</center></u></b></p>"),
+                              fileInput(ns("data_file"), ""),
+                              style = "background:#cce4fc" # Light blue colour
+                            )
+                          ),
                    )
                  ),
                  
@@ -228,13 +233,18 @@ dataUploadUI <- function(id) {
                      
                      # Button to finalise decision.
                      column(4,
-                            card(
-                              HTML("<p><b><u><center>Finalise Data</center></u></b></p>"),
-                              uiOutput(outputId = ns("warning_step_3_not_all_cleaned")),
-                              HTML("<p><center>Before pressing \"Lock Data\", check you are happy with the cleaned data below.</center></p><br>"),
-                              actionButton(ns("lock_data"), "Lock Data", class = "btn-danger"),
-                              style = "background:#cce4fc" # Light blue colour
-                            ),
+                            conditionalPanel(
+                              condition = paste0("output['", ns('data_locked'), "'] !== true"),
+                              card(
+                                HTML("<p><b><u><center>Finalise Data</center></u></b></p>"),
+                                uiOutput(outputId = ns("warning_step_3_not_all_cleaned")),
+                                HTML("<p><center>Before pressing \"Lock Data\", check you are happy with the cleaned data below.</center></p><br>"),
+                                HTML("<center>"),
+                                actionButton(ns("lock_data"), "Lock Data", class = "btn-danger"),
+                                HTML("</center>"),
+                                style = "background:#cce4fc" # Light blue colour
+                              ),
+                            )
                      ),
                      
                      # Cleaned data table display.
