@@ -757,11 +757,19 @@ dataUploadServer <- function(id) {
       return(NULL)
     })
     
+    data_locked_reactive <- reactiveVal(FALSE)
     observeEvent(input$lock_data, {
       step_2_completed(TRUE)
       step_3_completed(TRUE)
-      
+      data_locked_reactive(TRUE)
     })
+    
+    # Flag for when data has been locked
+    output$data_locked <- reactive({
+      val <- data_locked_reactive()
+    })
+    outputOptions(output, 'data_locked', suspendWhenHidden=FALSE)
+    
     
     
   })

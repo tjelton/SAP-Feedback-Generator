@@ -11,6 +11,21 @@ dataUploadUI <- function(id) {
   ns <- NS(id)
   tagList(
     
+    # Data lock conditional panel (for after the user clicks to lock the data).
+    conditionalPanel(
+      condition = paste0("output['", ns('data_locked'), "']"),
+      HTML("<br><br>"),
+      card(
+        HTML("<center><b><p>Data Lock</p></b></center>"),
+        HTML("<p>You have previously completed your data cleaning, and locked in your data. You are able to 
+             redo the data cleaning, but this will <b>reset</b> all analysis you have previously completed.<p>"),
+        HTML("<p><b><i>Do you want to unlock the data (this will clear any analysis)?</i></b></p>"),
+        actionButton(ns("unlcok_data"), "Unlock Data", class = "btn-danger", width = "20%"),
+        style = "background:#fccccc" # Light red colour.
+      ),
+      HTML("<br><br>")
+    ),
+    
     uiOutput(outputId = ns("value_box_steps")),
     
     tags$head(
