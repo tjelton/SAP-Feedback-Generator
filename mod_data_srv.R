@@ -6,6 +6,7 @@ library(bslib)
 library(stringr)
 library(bsicons)
 library(shinyWidgets)
+library(shinyalert)
 
 convert_non_numeric_to_character <- function(column) {
   if (is.numeric(column) || is.character(column)) {
@@ -119,7 +120,12 @@ dataUploadServer <- function(id) {
         mutate(across(everything(), convert_non_numeric_to_character))
       
       return(data)
-    }) 
+    })
+    
+    # Pop up about re-uploading the data.
+    observeEvent(input$reload_data, {
+      shinyalert("TEST", "info.", type = "warning")
+    })
     
     # Data store for data that can be modified.
     modified_data <- reactive({
@@ -550,7 +556,7 @@ dataUploadServer <- function(id) {
       
       # If the data lock is active, ignore all changes.
       if (data_locked_reactive()) {
-        return()
+        
       }
       
       ########## Update data_cleaning_input_options df.

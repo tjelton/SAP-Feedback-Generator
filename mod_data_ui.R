@@ -73,14 +73,26 @@ dataUploadUI <- function(id) {
                           # Only display the file upload button if data has not yet been uploaded yet.
                           conditionalPanel(
                             condition = paste0("output['", ns('data_uploaded_flag'), "'] !== true"),
-                            br(),
-                            br(),
                             card(
                               HTML("<p><b><u><center>File Input</center></u></b></p>"),
                               fileInput(ns("data_file"), ""),
                               style = "background:#cce4fc" # Light blue colour
                             )
                           ),
+                          
+                          # If data has been uploaded, change to reset button.
+                          conditionalPanel(
+                            condition = paste0("output['", ns('data_uploaded_flag'), "'] == true"),
+                            card(
+                              HTML("<center>"),
+                              HTML("<p><b><u>Re-upload Data</u></b></p>"),
+                              HTML("<p>Click on the button to re-upload your data. A pop will display with more instructions.</p>"),
+                              actionButton(ns("reload_data"), "Proceed", class = "btn-danger", width = "50%"),
+                              HTML("</center>"),
+                              style = "background:#fccccc" # Light red colour
+                            )
+                          ),
+                          
                    )
                  ),
                  
