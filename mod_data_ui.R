@@ -87,6 +87,8 @@ dataUploadUI <- function(id) {
                               HTML("<center>"),
                               HTML("<p><b><u>Re-upload Data</u></b></p>"),
                               HTML("<p>Click on the button to re-upload your data. A pop will display with more instructions.</p>"),
+                              shinyjs::useShinyjs(),
+                              shinyjs::extendShinyjs(text = "shinyjs.refresh_page = function() { location.reload(); }", functions = "refresh_page"),
                               actionButton(ns("reload_data"), "Proceed", class = "btn-danger", width = "50%"),
                               HTML("</center>"),
                               style = "background:#fccccc" # Light red colour

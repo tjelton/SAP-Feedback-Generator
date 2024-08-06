@@ -7,6 +7,7 @@ library(stringr)
 library(bsicons)
 library(shinyWidgets)
 library(shinyalert)
+library(shinyjs)
 
 convert_non_numeric_to_character <- function(column) {
   if (is.numeric(column) || is.character(column)) {
@@ -123,8 +124,17 @@ dataUploadServer <- function(id) {
     })
     
     # Pop up about re-uploading the data.
+    alert_result <- reactiveVal(NULL)
     observeEvent(input$reload_data, {
-      shinyalert("TEST", "info.", type = "warning")
+      shinyalert("TEST", 
+                 "info.", 
+                 type = "warning", 
+                 showCancelButton = TRUE,
+                 confirmButtonText = "Yes, proceed",
+                 cancelButtonText = "No, cancel",
+                 confirmButtonCol = "#F5AEAE",
+                 callbackR = function(x) { shinyjs::js$refresh_page() },
+      )
     })
     
     # Data store for data that can be modified.
