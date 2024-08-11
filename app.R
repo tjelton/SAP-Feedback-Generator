@@ -2,6 +2,8 @@ library(shiny)
 
 source("mod_data_ui.R")
 source("mod_data_srv.R")
+source("mod_analysis_ui.R")
+source("mod_analysis_srv.R")
 
 options(shiny.autoreload = TRUE) 
 
@@ -40,10 +42,12 @@ ui  <- tagList(
     tabPanel(
       
       # Tab Title
-      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">Page 3</h5>'),
+      HTML('<h7 style="padding-left: 10px; padding-right: 10px; display: inline;">Analysis Components</h5>'),
+      
+      analysisUI("analysis")
              
              
-    "This panel is intentionally left blank")
+    )
   )
 )
 
@@ -60,7 +64,7 @@ server <- function(input, output, session) {
   #bs_themer() #Flatly, #Spacelab, #Zephyr
   
   dataUploadServer(id = "data_upload")
-
+  analysisServer(id = "analysis")
   
   
   
